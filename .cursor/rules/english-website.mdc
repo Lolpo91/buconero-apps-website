@@ -1,0 +1,25 @@
+---
+description: Buconero Apps website must use English for all user-facing copy
+alwaysApply: true
+---
+
+# Website language: English only
+
+This project is the **Buconero Apps** marketing and help website (`index.html`, `legal.html`, `help/*.html`, and related assets).
+
+## Rules
+
+- Write **all user-facing text in English**: navigation, headings, body copy, buttons, `aria-label`s, meta descriptions, placeholders, and legal/help sections unless the user explicitly requests another language for a specific block.
+- Set `lang="en"` on the root `<html>` element for every page.
+- Keep **app product names** as branded (e.g. Card Grading AI, Book Writing AI, Card Centering Pro).
+- Do not introduce Italian (or other languages) for UI copy when adding or editing pages.
+- Privacy policies and store-linked content may stay in English; align tone with existing help pages.
+
+## File scope
+
+- `index.html` — homepage
+- `legal.html` — legal notice
+- `help/*.html` — per-app help (privacy, delete account, support)
+- `styles.css` / `script.js` / `nav.js` — no user-facing Italian in comments intended for the site
+
+When the user asks for new sections or copy, default to clear, professional English suitable for an international app audience.

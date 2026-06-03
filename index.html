@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Buconero Apps — Software solutions powered by AI. Grading AI, Book Writing AI, Card Centering Pro." />
+  <title>Buconero Apps | Software Solutions</title>
+  <link rel="icon" href="assets/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="intro" class="intro" aria-hidden="true">
+    <canvas id="buconero-canvas"></canvas>
+    <div class="intro-vortex" aria-hidden="true">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="ring ring-4"></div>
+      <div class="ring ring-5"></div>
+      <div class="intro-core"></div>
+    </div>
+    <p class="intro-label">BUCONERO APPS</p>
+  </div>
+
+  <div id="main" class="main hidden">
+    <header class="header">
+      <a href="#" class="brand">
+        <img src="assets/logo.png" alt="Buconero Apps" class="brand-logo" width="48" height="48" />
+        <span class="brand-text">Buconero <span class="brand-accent">Apps</span></span>
+      </a>
+      <nav class="nav">
+        <a href="#apps">Our Apps</a>
+        <div class="nav-dropdown">
+          <button type="button" class="nav-dropdown-toggle" aria-expanded="false" aria-haspopup="true">
+            Help
+            <svg class="nav-dropdown-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <ul class="nav-dropdown-menu" role="menu">
+            <li role="none">
+              <a href="help/card-grading-ai.html" role="menuitem" class="nav-dropdown-item">
+                <img src="assets/logo-grading-ai.png" alt="" class="nav-dropdown-icon" width="28" height="28" />
+                <span>Card Grading AI</span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="help/book-writing-ai.html" role="menuitem" class="nav-dropdown-item">
+                <img src="assets/logo-book-writing-ai.png" alt="" class="nav-dropdown-icon" width="28" height="28" />
+                <span>Book Writing AI</span>
+              </a>
+            </li>
+            <li role="none">
+              <a href="help/card-centering-pro.html" role="menuitem" class="nav-dropdown-item">
+                <img src="assets/logo-card-centering.png" alt="" class="nav-dropdown-icon" width="28" height="28" />
+                <span>Card Centering Pro</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <a href="#contact" class="nav-cta">Contact</a>
+      </nav>
+      <button class="menu-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <img src="assets/logo.png" alt="Buconero Apps — Software Solutions" class="hero-logo" width="280" height="auto" />
+        <p class="hero-tagline">SOFTWARE SOLUTIONS</p>
+        <h1 class="hero-title">We build <span class="gradient-text">innovative apps</span> that work</h1>
+        <p class="hero-desc">
+          We design and develop innovative web and mobile applications, combining solid software engineering
+          with artificial intelligence when it delivers real value. We turn ideas into concrete, scalable,
+          market-ready digital products—with a fast, pragmatic, results-driven approach.
+        </p>
+        <div class="hero-actions">
+          <a href="#apps" class="btn btn-primary">Discover Our Apps</a>
+          <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+        </div>
+      </div>
+      <div class="hero-orbit" aria-hidden="true">
+        <div class="orbit-ring"></div>
+      </div>
+    </section>
+
+    <section id="apps" class="apps">
+      <div class="section-header">
+        <span class="section-label">Portfolio</span>
+        <h2>Our Apps</h2>
+      </div>
+
+      <div class="apps-grid">
+        <article class="app-card" data-app="grading">
+          <div class="app-card-glow"></div>
+          <div class="app-icon">
+            <img src="assets/logo-grading-ai.png" alt="Card Grading AI — CGA logo" width="120" height="120" />
+          </div>
+          <h3>Card Grading AI</h3>
+          <p>Automatic grading for collectible cards using AI, with visual analysis of corners, surface, and centering. Get a grade estimate and a clear report on the main factors affecting card value in seconds.</p>
+          <ul class="app-features">
+            <li>Advanced visual analysis of corners, surface, and centering</li>
+            <li>PSA/BGS-style grade estimate</li>
+            <li>Detailed report with strengths and areas for improvement</li>
+          </ul>
+          <div class="store-badges">
+            <a href="https://apps.apple.com/us/app/card-grading-ai/id6752859834" class="store-badge" target="_blank" rel="noopener noreferrer" aria-label="Download Card Grading AI on the App Store">
+              <img src="assets/badge-app-store.png" alt="Download on the App Store" width="120" height="40" />
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.gradeai.yourapp&hl=en_US" class="store-badge" target="_blank" rel="noopener noreferrer" aria-label="Download Card Grading AI on Google Play">
+              <img src="assets/badge-google-play.png" alt="Get it on Google Play" width="135" height="40" />
+            </a>
+          </div>
+        </article>
+
+        <article class="app-card" data-app="book">
+          <div class="app-card-glow"></div>
+          <div class="app-icon">
+            <img src="assets/logo-book-writing-ai.png" alt="Book Writing AI" width="120" height="120" />
+          </div>
+          <h3>Book Writing AI</h3>
+          <p>AI writing assistant that supports the full creative process—from defining the concept and building the outline to writing chapters, stylistic revision, and narrative consistency checks.</p>
+          <ul class="app-features">
+            <li>Outline and chapter generation</li>
+            <li>Narrative consistency checks</li>
+            <li>Stylistic text revision</li>
+            <li>Export to multiple formats</li>
+          </ul>
+          <div class="store-badges">
+            <a href="https://apps.apple.com/us/app/book-writer-ai/id6759101552" class="store-badge" target="_blank" rel="noopener noreferrer" aria-label="Download Book Writing AI on the App Store">
+              <img src="assets/badge-app-store.png" alt="Download on the App Store" width="120" height="40" />
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.matteo.bookwriterai&hl=en_US" class="store-badge" target="_blank" rel="noopener noreferrer" aria-label="Download Book Writing AI on Google Play">
+              <img src="assets/badge-google-play.png" alt="Get it on Google Play" width="135" height="40" />
+            </a>
+          </div>
+        </article>
+
+        <article class="app-card" data-app="centering">
+          <div class="app-card-glow"></div>
+          <div class="app-icon">
+            <img src="assets/logo-card-centering.png" alt="Card Centering Pro" width="120" height="120" />
+          </div>
+          <h3>Card Centering Pro</h3>
+          <p>Precise centering measurement with a guided overlay and percentages on all four sides. An essential tool to quickly assess card alignment before grading.</p>
+          <ul class="app-features">
+            <li>Millimeter overlay for accurate measurement</li>
+            <li>Left/right and top/bottom percentages</li>
+            <li>Screenshot saving for comparison and archive</li>
+          </ul>
+          <div class="store-badges store-badges--single">
+            <a href="https://play.google.com/store/apps/details?id=com.cardcentering.ai" class="store-badge" target="_blank" rel="noopener noreferrer" aria-label="Download Card Centering Pro on Google Play">
+              <img src="assets/badge-google-play.png" alt="Get it on Google Play" width="135" height="40" />
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="about-grid">
+        <div class="about-text">
+          <span class="section-label">About Us</span>
+          <h2>The black hole of innovation</h2>
+          <p>
+            <strong>Buconero</strong>—from the Italian for "black hole"—is where AI absorbs complexity
+            and returns solutions that are simple, fast, and hard to ignore.
+          </p>
+          <p>
+            We build vertical apps for specific niches, with models built on real use cases
+            and problems the market is already trying to solve.
+          </p>
+          <p>
+            Every app starts from a concrete need: grade a card, write a book, measure centering.
+            No generic tools, no "AI for everything." Only focused products that are useful right away,
+            built for people who want to get ahead.
+          </p>
+          <p class="about-closing">
+            Because when a niche explodes, whoever already has the right tool is ahead.
+          </p>
+        </div>
+        <div class="about-stats">
+          <div class="stat">
+            <span class="stat-num">3</span>
+            <span class="stat-label">Active apps</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">200K+</span>
+            <span class="stat-label">Total downloads</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">4.7★</span>
+            <span class="stat-label">Average rating</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="contact-box">
+        <h2>Ready to step into the black hole?</h2>
+        <p>Contact us for demos, partnerships, or early adopter access to our apps.</p>
+        <a href="mailto:info@buconeroapps.com" class="btn btn-primary btn-lg">info@buconeroapps.com</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <img src="assets/logo.png" alt="" class="footer-logo" width="40" height="40" aria-hidden="true" />
+      <p>© 2026 Buconero Apps · Software Solutions</p>
+      <p class="footer-legal">Individual entrepreneur MATTEO GIANNESSI · ID 305858248</p>
+      <a href="legal.html" class="footer-link">Legal notice</a>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="nav.js"></script>
+</body>
+</html>
