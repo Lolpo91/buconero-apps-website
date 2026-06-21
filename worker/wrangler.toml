@@ -1,0 +1,23 @@
+name = "buconero-dashboard-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Public app identifiers (not secrets)
+[vars]
+PLAY_PACKAGE_NAME = "com.gradeai.yourapp"
+APPLE_BUNDLE_ID = "com.cardgradingai.app"
+
+# After first deploy, add a route in Cloudflare Dashboard:
+#   buconeroapps.com/api/*
+# Or uncomment and set your zone:
+# [[routes]]
+# pattern = "buconeroapps.com/api/*"
+# zone_name = "buconeroapps.com"
+
+# Required secrets (set via CLI, never commit):
+#   npx wrangler secret put DASHBOARD_PASSWORD
+#   npx wrangler secret put SESSION_SECRET
+#   npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
+#   npx wrangler secret put APPLE_KEY_ID
+#   npx wrangler secret put APPLE_ISSUER_ID
+#   npx wrangler secret put APPLE_PRIVATE_KEY

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Private app metrics dashboard" />
+  <title>Dashboard | Buconero Apps</title>
+  <link rel="icon" href="assets/favicon.ico" sizes="any" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body class="dashboard-body">
+  <div id="login-screen" class="dashboard-login">
+    <div class="dashboard-login-card">
+      <img src="assets/logo.png" alt="" width="56" height="56" class="dashboard-login-logo" />
+      <h1>Card Grading AI</h1>
+      <p class="dashboard-login-sub">Private metrics dashboard</p>
+      <form id="login-form" class="dashboard-login-form">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required />
+        <p id="login-error" class="dashboard-error" hidden></p>
+        <button type="submit" class="btn btn-primary btn-lg dashboard-login-btn">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="dashboard-screen" class="dashboard-app hidden" hidden>
+    <header class="dashboard-header">
+      <div class="dashboard-header-left">
+        <img src="assets/logo-grading-ai.png" alt="" width="40" height="40" />
+        <div>
+          <h1>Card Grading AI</h1>
+          <p class="dashboard-header-meta">
+            <span id="android-id">com.gradeai.yourapp</span>
+            <span class="dashboard-dot">·</span>
+            <span id="ios-id">com.cardgradingai.app</span>
+          </p>
+        </div>
+      </div>
+      <div class="dashboard-header-actions">
+        <button type="button" id="refresh-btn" class="btn btn-secondary dashboard-refresh">Refresh</button>
+        <button type="button" id="logout-btn" class="btn btn-secondary">Sign out</button>
+      </div>
+    </header>
+
+    <div id="api-warnings" class="dashboard-warnings" hidden></div>
+
+    <section class="dashboard-stats" aria-label="Overview">
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Android rating</p>
+        <p class="dashboard-stat-value" id="stat-android-rating">—</p>
+        <p class="dashboard-stat-sub" id="stat-android-reviews">— reviews</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">iOS rating</p>
+        <p class="dashboard-stat-value" id="stat-ios-rating">—</p>
+        <p class="dashboard-stat-sub" id="stat-ios-reviews">— reviews</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Android crashes (7d)</p>
+        <p class="dashboard-stat-value" id="stat-android-crashes">—</p>
+        <p class="dashboard-stat-sub">Play Developer Reporting</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Last updated</p>
+        <p class="dashboard-stat-value dashboard-stat-value-sm" id="stat-updated">—</p>
+        <p class="dashboard-stat-sub" id="stat-api-status">Checking APIs…</p>
+      </article>
+    </section>
+
+    <section class="dashboard-charts">
+      <article class="dashboard-chart-card">
+        <h2>Star distribution — Android</h2>
+        <div class="dashboard-chart-wrap">
+          <canvas id="chart-android-stars" aria-label="Android star distribution"></canvas>
+        </div>
+      </article>
+      <article class="dashboard-chart-card">
+        <h2>Star distribution — iOS</h2>
+        <div class="dashboard-chart-wrap">
+          <canvas id="chart-ios-stars" aria-label="iOS star distribution"></canvas>
+        </div>
+      </article>
+      <article class="dashboard-chart-card dashboard-chart-card-wide">
+        <h2>Platform comparison</h2>
+        <div class="dashboard-chart-wrap">
+          <canvas id="chart-comparison" aria-label="Android vs iOS ratings"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <footer class="dashboard-footer">
+      <p>Not linked from the public site · <a href="index.html">Back to homepage</a></p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

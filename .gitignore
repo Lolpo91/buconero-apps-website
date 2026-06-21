@@ -1,3 +1,11 @@
 .DS_Store
 Thumbs.db
 *.log
+.env
+.env.*
+worker/node_modules/
+worker/.wrangler/
+*.pem
+*.p8
+service-account*.json
+google-credentials.json
