@@ -22,3 +22,9 @@ zone_name = "buconeroapps.com"
 #   npx wrangler secret put APPLE_ISSUER_ID
 #   npx wrangler secret put APPLE_PRIVATE_KEY
 #   npx wrangler secret put APPLE_VENDOR_NUMBER
+#   npx wrangler secret put ADMOB_ACCOUNT_ID
+#   npx wrangler secret put ADMOB_CLIENT_ID
+#   npx wrangler secret put ADMOB_CLIENT_SECRET
+#   npx wrangler secret put ADMOB_REFRESH_TOKEN
+# Optional:
+#   npx wrangler secret put ADMOB_CURRENCY

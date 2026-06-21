@@ -35,6 +35,7 @@
     bars: ['#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa'],
     android: '#4ade80',
     ios: '#60a5fa',
+    admob: '#facc15',
   };
 
   function showLogin() {
@@ -255,7 +256,8 @@
     const iosRevenue = ios.financial && ios.financial.configured !== false ? ios.financial : null;
     const androidRetention = android.retention && android.retention.configured !== false ? android.retention : null;
     const iosRetention = ios.retention && ios.retention.configured !== false ? ios.retention : null;
-    return { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention };
+    const adMob = metricsData?.adMob && metricsData.adMob.configured !== false ? metricsData.adMob : null;
+    return { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention, adMob };
   }
 
   function isValidMonth(value) {
@@ -339,14 +341,14 @@
   }
 
   function configureChartControls(type) {
-    const isRevenue = type === 'ios-revenue' || type === 'android-revenue';
+    const isRevenue = type === 'ios-revenue' || type === 'android-revenue' || type === 'admob-revenue';
     chartRange.parentElement.hidden = !isRevenue;
     chartMonthControl.hidden = !isRevenue || chartRange.value !== 'month';
 
     if (!isRevenue) return;
 
-    const { androidRevenue, iosRevenue } = getMetricSources();
-    const revenue = type === 'ios-revenue' ? iosRevenue : androidRevenue;
+    const { androidRevenue, iosRevenue, adMob } = getMetricSources();
+    const revenue = type === 'ios-revenue' ? iosRevenue : type === 'admob-revenue' ? adMob : androidRevenue;
     const months = monthsForRevenue(revenue);
     const fingerprint = months.join('|');
 
@@ -446,7 +448,7 @@
   async function renderActiveChart() {
     if (!activeChart || !metricsData) return;
 
-    const { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention } = getMetricSources();
+    const { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention, adMob } = getMetricSources();
     document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
       card.classList.toggle('is-active', card.dataset.chart === activeChart);
     });
@@ -461,6 +463,11 @@
 
     if (activeChart === 'android-revenue') {
       renderRevenueChart('Android revenue', androidRevenue, chartColors.android);
+      return;
+    }
+
+    if (activeChart === 'admob-revenue') {
+      renderRevenueChart('AdMob revenue', adMob, chartColors.admob);
       return;
     }
 
@@ -485,6 +492,17 @@
         [androidRevenue?.subscriptionOrders30d || 0],
         'Orders',
         chartColors.android
+      );
+      return;
+    }
+
+    if (activeChart === 'admob-engagement') {
+      chartTitle.textContent = 'AdMob engagement (30d)';
+      makeDetailBarChart(
+        ['Impressions', 'Clicks', 'Ad requests'],
+        [adMob?.impressions30d || 0, adMob?.clicks30d || 0, adMob?.adRequests30d || 0],
+        'AdMob',
+        [chartColors.admob, '#fb923c', '#a78bfa']
       );
       return;
     }
@@ -662,6 +680,32 @@
     );
   }
 
+  function renderAdMob(adMobData) {
+    const adMob = adMobData && adMobData.configured !== false ? adMobData : null;
+
+    setText(
+      'stat-admob-revenue-30d',
+      adMob && adMob.last30Days != null ? formatMoney(adMob.last30Days, adMob.currency) : '—'
+    );
+    setText(
+      'stat-admob-revenue-month',
+      adMob && adMob.monthToDate != null ? formatMoney(adMob.monthToDate, adMob.currency) : '—'
+    );
+    setText(
+      'stat-admob-revenue-note',
+      adMob && adMob.note ? adMob.note : adMobData?.error || 'Needs AdMob OAuth secrets'
+    );
+    setText(
+      'stat-admob-revenue-currency',
+      adMob && adMob.currency ? adMob.currency + ' · estimated earnings' : 'Needs AdMob OAuth secrets'
+    );
+    setText('stat-admob-impressions', adMob ? formatCount(adMob.impressions30d) : '—');
+    setText(
+      'stat-admob-clicks',
+      adMob ? formatCount(adMob.clicks30d) + ' clicks' : '— clicks'
+    );
+  }
+
   async function renderMetrics(data) {
     metricsData = data;
     const android = data.android || {};
@@ -687,11 +731,13 @@
     const parts = [];
     if (playOk) parts.push('Play Console');
     if (appStoreOk) parts.push('App Store Connect');
+    if (data.configured && data.configured.adMob) parts.push('AdMob');
     document.getElementById('stat-api-status').textContent =
       parts.length ? parts.join(' + ') + ' connected' : 'API secrets not configured yet';
 
     renderRevenue(data.revenue, (data.ios && data.ios.financial) || null);
     renderRetention(android, ios);
+    renderAdMob(data.adMob);
     renderWarnings(data.warnings);
     if (activeChart) await renderActiveChart();
   }

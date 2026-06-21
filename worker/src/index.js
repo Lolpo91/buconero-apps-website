@@ -80,13 +80,16 @@ export default {
       const { fetchPlayRevenue } = await import('./google-play-revenue.js');
       const { fetchPlayRetention } = await import('./google-play-retention.js');
       const { fetchAppStoreMetrics } = await import('./app-store.js');
+      const { fetchAdMobMetrics } = await import('./admob.js');
 
       const warnings = [];
       let android = { reviewCount: 0, averageRating: null, starDistribution: [0, 0, 0, 0, 0] };
       let ios = { reviewCount: 0, averageRating: null, starDistribution: [0, 0, 0, 0, 0] };
       let revenue = null;
+      let adMob = { configured: false };
       let playConfigured = false;
       let appStoreConfigured = false;
+      let adMobConfigured = false;
 
       try {
         const play = await fetchPlayMetrics(env);
@@ -144,7 +147,17 @@ export default {
         warnings.push('App Store: ' + (err.message || 'request failed'));
       }
 
-      if (!playConfigured && !appStoreConfigured) {
+      try {
+        adMob = await fetchAdMobMetrics(env);
+        adMobConfigured = !!adMob.configured;
+        if (adMob.error) {
+          warnings.push('AdMob: ' + adMob.error);
+        }
+      } catch (err) {
+        warnings.push('AdMob: ' + (err.message || 'request failed'));
+      }
+
+      if (!playConfigured && !appStoreConfigured && !adMobConfigured) {
         warnings.push(
           'Deploy worker secrets to load live data. The dashboard login still works; charts stay empty until APIs are connected.'
         );
@@ -153,10 +166,11 @@ export default {
       return new Response(
         JSON.stringify({
           fetchedAt: new Date().toISOString(),
-          configured: { play: playConfigured, appStore: appStoreConfigured },
+          configured: { play: playConfigured, appStore: appStoreConfigured, adMob: adMobConfigured },
           android,
           ios,
           revenue,
+          adMob,
           warnings,
         }),
         { status: 200, headers }

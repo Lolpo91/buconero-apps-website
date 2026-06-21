@@ -70,6 +70,16 @@
         <p class="dashboard-stat-value" id="stat-ios-revenue-month">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-revenue-currency">—</p>
       </article>
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="admob-revenue" role="button" tabindex="0" aria-label="Show AdMob ad revenue chart">
+        <p class="dashboard-stat-label">AdMob revenue (30d)</p>
+        <p class="dashboard-stat-value" id="stat-admob-revenue-30d">—</p>
+        <p class="dashboard-stat-sub" id="stat-admob-revenue-note">Needs AdMob OAuth secrets</p>
+      </article>
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="admob-revenue" data-chart-range="month" role="button" tabindex="0" aria-label="Show AdMob monthly ad revenue chart">
+        <p class="dashboard-stat-label">AdMob revenue (month)</p>
+        <p class="dashboard-stat-value" id="stat-admob-revenue-month">—</p>
+        <p class="dashboard-stat-sub" id="stat-admob-revenue-currency">—</p>
+      </article>
       <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-subscriptions" role="button" tabindex="0" aria-label="Show Android subscription orders chart">
         <p class="dashboard-stat-label">Android subscription orders (30d)</p>
         <p class="dashboard-stat-value" id="stat-android-subscription-orders">—</p>
@@ -79,6 +89,11 @@
         <p class="dashboard-stat-label">iOS active subscriptions</p>
         <p class="dashboard-stat-value" id="stat-ios-active-subscriptions">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-subscription-orders">— subscription purchases (30d)</p>
+      </article>
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="admob-engagement" role="button" tabindex="0" aria-label="Show AdMob engagement chart">
+        <p class="dashboard-stat-label">AdMob impressions (30d)</p>
+        <p class="dashboard-stat-value" id="stat-admob-impressions">—</p>
+        <p class="dashboard-stat-sub" id="stat-admob-clicks">— clicks</p>
       </article>
     </section>
 
@@ -153,6 +168,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-  <script src="dashboard.js?v=20260621-6"></script>
+  <script src="dashboard.js?v=20260621-7"></script>
 </body>
 </html>
