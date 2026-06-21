@@ -27,6 +27,7 @@
   let iosMonthDailyLoading = false;
   let chartSelectedMonth = '';
   let chartMonthsFingerprint = '';
+  let authFlowId = 0;
 
   const chartColors = {
     grid: 'rgba(255, 255, 255, 0.06)',
@@ -62,6 +63,7 @@
   async function api(path, options) {
     const res = await fetch(API_BASE + path, {
       ...options,
+      credentials: 'include',
       headers: authHeaders(options && options.headers),
     });
 
@@ -701,17 +703,21 @@
   }
 
   async function checkSession() {
+    const flowId = authFlowId;
     try {
       await api('/auth/session');
+      if (flowId !== authFlowId) return;
       showDashboard();
       await loadMetrics();
     } catch {
+      if (flowId !== authFlowId) return;
       showLogin();
     }
   }
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    authFlowId += 1;
     loginError.hidden = true;
 
     try {
