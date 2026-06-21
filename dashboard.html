@@ -50,32 +50,32 @@
     <div id="api-warnings" class="dashboard-warnings" hidden></div>
 
     <section class="dashboard-stats dashboard-stats-revenue" aria-label="Revenue">
-      <article class="dashboard-stat-card dashboard-stat-card-highlight">
+      <article class="dashboard-stat-card dashboard-stat-card-highlight dashboard-chart-trigger" data-chart="android-revenue" role="button" tabindex="0" aria-label="Show Android revenue chart">
         <p class="dashboard-stat-label">Android revenue (30d)</p>
         <p class="dashboard-stat-value" id="stat-android-revenue-30d">—</p>
         <p class="dashboard-stat-sub" id="stat-android-revenue-note">Estimated sales · before Google fees</p>
       </article>
-      <article class="dashboard-stat-card dashboard-stat-card-highlight dashboard-stat-card-ios">
+      <article class="dashboard-stat-card dashboard-stat-card-highlight dashboard-stat-card-ios dashboard-chart-trigger" data-chart="ios-revenue" role="button" tabindex="0" aria-label="Show iOS proceeds chart">
         <p class="dashboard-stat-label">iOS proceeds (30d)</p>
         <p class="dashboard-stat-value" id="stat-ios-revenue-30d">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-revenue-note">Developer proceeds · App Store reports</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-revenue" role="button" tabindex="0" aria-label="Show Android monthly revenue chart">
         <p class="dashboard-stat-label">Android revenue (month)</p>
         <p class="dashboard-stat-value" id="stat-android-revenue-month">—</p>
         <p class="dashboard-stat-sub" id="stat-android-revenue-currency">—</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="ios-revenue" role="button" tabindex="0" aria-label="Show iOS monthly proceeds chart">
         <p class="dashboard-stat-label">iOS proceeds (month)</p>
         <p class="dashboard-stat-value" id="stat-ios-revenue-month">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-revenue-currency">—</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-subscriptions" role="button" tabindex="0" aria-label="Show Android subscription orders chart">
         <p class="dashboard-stat-label">Android subscription orders (30d)</p>
         <p class="dashboard-stat-value" id="stat-android-subscription-orders">—</p>
         <p class="dashboard-stat-sub">Charged Play orders</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="ios-subscriptions" role="button" tabindex="0" aria-label="Show iOS subscriptions chart">
         <p class="dashboard-stat-label">iOS active subscriptions</p>
         <p class="dashboard-stat-value" id="stat-ios-active-subscriptions">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-subscription-orders">— subscription purchases (30d)</p>
@@ -83,17 +83,17 @@
     </section>
 
     <section class="dashboard-stats" aria-label="Overview">
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-rating" role="button" tabindex="0" aria-label="Show Android rating chart">
         <p class="dashboard-stat-label">Android rating</p>
         <p class="dashboard-stat-value" id="stat-android-rating">—</p>
         <p class="dashboard-stat-sub" id="stat-android-reviews">— reviews</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="ios-rating" role="button" tabindex="0" aria-label="Show iOS rating chart">
         <p class="dashboard-stat-label">iOS rating</p>
         <p class="dashboard-stat-value" id="stat-ios-rating">—</p>
         <p class="dashboard-stat-sub" id="stat-ios-reviews">— reviews</p>
       </article>
-      <article class="dashboard-stat-card">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-crashes" role="button" tabindex="0" aria-label="Show Android crashes chart">
         <p class="dashboard-stat-label">Android crashes (7d)</p>
         <p class="dashboard-stat-value" id="stat-android-crashes">—</p>
         <p class="dashboard-stat-sub">Play Developer Reporting</p>
@@ -105,29 +105,31 @@
       </article>
     </section>
 
-    <section class="dashboard-charts">
+    <section id="dashboard-chart-panel" class="dashboard-chart-panel" aria-live="polite" hidden>
       <article class="dashboard-chart-card dashboard-chart-card-wide">
-        <h2>Revenue — Android vs iOS (30 days)</h2>
-        <div class="dashboard-chart-wrap">
-          <canvas id="chart-revenue" aria-label="Android and iOS daily revenue"></canvas>
+        <div class="dashboard-chart-header">
+          <div>
+            <p class="dashboard-chart-kicker">Selected stat</p>
+            <h2 id="chart-title">Chart</h2>
+          </div>
+          <div class="dashboard-chart-actions">
+            <label class="dashboard-chart-control">
+              Range
+              <select id="chart-range">
+                <option value="all">All time</option>
+                <option value="month">Month</option>
+              </select>
+            </label>
+            <label class="dashboard-chart-control" id="chart-month-control">
+              Month
+              <select id="chart-month"></select>
+            </label>
+            <button type="button" id="chart-close" class="btn btn-secondary">Close</button>
+          </div>
         </div>
-      </article>
-      <article class="dashboard-chart-card">
-        <h2>Star distribution — Android</h2>
+        <p id="chart-empty" class="dashboard-chart-empty" hidden>No chart data available yet.</p>
         <div class="dashboard-chart-wrap">
-          <canvas id="chart-android-stars" aria-label="Android star distribution"></canvas>
-        </div>
-      </article>
-      <article class="dashboard-chart-card">
-        <h2>Star distribution — iOS</h2>
-        <div class="dashboard-chart-wrap">
-          <canvas id="chart-ios-stars" aria-label="iOS star distribution"></canvas>
-        </div>
-      </article>
-      <article class="dashboard-chart-card dashboard-chart-card-wide">
-        <h2>Platform comparison</h2>
-        <div class="dashboard-chart-wrap">
-          <canvas id="chart-comparison" aria-label="Android vs iOS ratings"></canvas>
+          <canvas id="chart-detail" aria-label="Selected metric chart"></canvas>
         </div>
       </article>
     </section>
@@ -138,6 +140,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-  <script src="dashboard.js?v=20260621"></script>
+  <script src="dashboard.js?v=20260621-2"></script>
 </body>
 </html>

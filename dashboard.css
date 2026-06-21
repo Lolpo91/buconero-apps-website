@@ -172,6 +172,23 @@
   border-radius: var(--radius);
 }
 
+.dashboard-chart-trigger {
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-chart-trigger:hover,
+.dashboard-chart-trigger:focus-visible,
+.dashboard-chart-trigger.is-active {
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.dashboard-chart-trigger:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 3px;
+}
+
 .dashboard-stat-label {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -195,10 +212,8 @@
   margin-top: 0.35rem;
 }
 
-.dashboard-charts {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+.dashboard-chart-panel {
+  margin-bottom: 2rem;
 }
 
 .dashboard-chart-card {
@@ -212,11 +227,60 @@
   grid-column: 1 / -1;
 }
 
+.dashboard-chart-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.dashboard-chart-kicker {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+
 .dashboard-chart-card h2 {
   font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 1rem;
   color: var(--silver);
+}
+
+.dashboard-chart-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-chart-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.dashboard-chart-control select {
+  min-width: 130px;
+  padding: 0.55rem 0.7rem;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.dashboard-chart-empty {
+  padding: 1rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .dashboard-chart-wrap {
@@ -255,10 +319,6 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .dashboard-charts {
-    grid-template-columns: 1fr;
-  }
-
   .dashboard-chart-card-wide {
     grid-column: auto;
   }
@@ -279,5 +339,12 @@
 
   .dashboard-header-actions .btn {
     flex: 1;
+  }
+
+  .dashboard-chart-actions,
+  .dashboard-chart-actions .btn,
+  .dashboard-chart-control,
+  .dashboard-chart-control select {
+    width: 100%;
   }
 }

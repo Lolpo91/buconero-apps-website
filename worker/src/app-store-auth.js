@@ -35,7 +35,10 @@ export async function appStoreFetchReport(env, filters) {
   }
 
   const res = await fetch(url, {
-    headers: { Authorization: 'Bearer ' + token },
+    headers: {
+      Authorization: 'Bearer ' + token,
+      Accept: 'application/a-gzip',
+    },
   });
 
   if (res.status === 404 || res.status === 410) return null;

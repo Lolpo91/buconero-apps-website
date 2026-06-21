@@ -17,6 +17,27 @@ export default {
     const authResponse = await handleAuth(request, env, pathname);
     if (authResponse) return authResponse;
 
+    if (pathname === '/api/ios-revenue-history' && request.method === 'GET') {
+      const session = await requireAuth(request, env);
+      if (!session) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers,
+        });
+      }
+
+      try {
+        const { fetchAppStoreRevenueHistory } = await import('./app-store.js');
+        const history = await fetchAppStoreRevenueHistory(env);
+        return new Response(JSON.stringify(history), { status: 200, headers });
+      } catch (err) {
+        return new Response(
+          JSON.stringify({ configured: false, error: err.message || 'Revenue history failed' }),
+          { status: 500, headers }
+        );
+      }
+    }
+
     if (pathname === '/api/metrics' && request.method === 'GET') {
       const session = await requireAuth(request, env);
       if (!session) {
@@ -70,6 +91,8 @@ export default {
           ios = appStore;
           if (appStore.financial?.error) {
             warnings.push('iOS revenue: ' + appStore.financial.error);
+          } else if (appStore.financial?.warning) {
+            warnings.push('iOS revenue: ' + appStore.financial.warning);
           }
         } else if (appStore.error) {
           warnings.push('App Store: ' + appStore.error);

@@ -12,8 +12,18 @@
   const logoutBtn = document.getElementById('logout-btn');
   const refreshBtn = document.getElementById('refresh-btn');
   const warningsEl = document.getElementById('api-warnings');
+  const chartPanel = document.getElementById('dashboard-chart-panel');
+  const chartTitle = document.getElementById('chart-title');
+  const chartRange = document.getElementById('chart-range');
+  const chartMonth = document.getElementById('chart-month');
+  const chartMonthControl = document.getElementById('chart-month-control');
+  const chartClose = document.getElementById('chart-close');
+  const chartEmpty = document.getElementById('chart-empty');
 
   let charts = {};
+  let activeChart = null;
+  let metricsData = null;
+  let iosRevenueHistoryLoading = false;
 
   const chartColors = {
     grid: 'rgba(255, 255, 255, 0.06)',
@@ -79,18 +89,37 @@
     charts = {};
   }
 
-  function makeBarChart(canvasId, labels, data, label) {
-    const canvas = document.getElementById(canvasId);
+  function chartCanvas() {
+    return document.getElementById('chart-detail');
+  }
+
+  function hasChartData(data) {
+    return Array.isArray(data) && data.some((value) => Number(value) > 0);
+  }
+
+  function setChartEmpty(isEmpty) {
+    if (!chartEmpty) return;
+    chartEmpty.hidden = !isEmpty;
+    const wrap = chartCanvas()?.closest('.dashboard-chart-wrap');
+    if (wrap) wrap.hidden = isEmpty;
+  }
+
+  function makeDetailBarChart(labels, data, label, color) {
+    const canvas = chartCanvas();
     if (!canvas) return;
 
-    charts[canvasId] = new Chart(canvas, {
+    destroyCharts();
+    setChartEmpty(!hasChartData(data));
+    if (!hasChartData(data)) return;
+
+    charts.detail = new Chart(canvas, {
       type: 'bar',
       data: {
         labels,
         datasets: [{
           label,
           data,
-          backgroundColor: chartColors.bars,
+          backgroundColor: Array.isArray(color) ? color : color || chartColors.ios,
           borderRadius: 6,
           borderSkipped: false,
         }],
@@ -119,28 +148,20 @@
     });
   }
 
-  function makeComparisonChart(androidRating, iosRating) {
-    const canvas = document.getElementById('chart-comparison');
+  function makeDetailLineChart(labels, datasets) {
+    const canvas = chartCanvas();
     if (!canvas) return;
 
-    charts.comparison = new Chart(canvas, {
-      type: 'bar',
+    destroyCharts();
+    const hasData = datasets.some((dataset) => hasChartData(dataset.data));
+    setChartEmpty(!hasData);
+    if (!hasData) return;
+
+    charts.detail = new Chart(canvas, {
+      type: 'line',
       data: {
-        labels: ['Average rating'],
-        datasets: [
-          {
-            label: 'Android',
-            data: [androidRating ?? 0],
-            backgroundColor: chartColors.android,
-            borderRadius: 6,
-          },
-          {
-            label: 'iOS',
-            data: [iosRating ?? 0],
-            backgroundColor: chartColors.ios,
-            borderRadius: 6,
-          },
-        ],
+        labels,
+        datasets,
       },
       options: {
         responsive: true,
@@ -156,8 +177,7 @@
             ticks: { color: chartColors.text },
           },
           y: {
-            min: 0,
-            max: 5,
+            beginAtZero: true,
             grid: { color: chartColors.grid },
             ticks: { color: chartColors.text },
           },
@@ -194,68 +214,221 @@
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: currency || 'USD',
-        maximumFractionDigits: 0,
+        maximumFractionDigits: 2,
       }).format(value);
     } catch {
       return value.toLocaleString('en-US') + (currency ? ' ' + currency : '');
     }
   }
 
-  function makeRevenueChart(androidRev, iosRev) {
-    const canvas = document.getElementById('chart-revenue');
-    if (!canvas) return;
+  function monthLabel(month) {
+    const [year, monthNumber] = String(month || '').split('-').map(Number);
+    if (!year || !monthNumber) return month || '';
+    return new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  }
 
-    const androidDays = (androidRev && androidRev.revenueByDay) || [];
-    const iosDays = (iosRev && iosRev.revenueByDay) || [];
-    const labels = [...new Set([...androidDays, ...iosDays].map((d) => d.date))].sort();
-    const androidMap = Object.fromEntries(androidDays.map((d) => [d.date, d.total]));
-    const iosMap = Object.fromEntries(iosDays.map((d) => [d.date, d.total]));
+  function getMetricSources() {
+    const androidRevenue = metricsData && metricsData.revenue && metricsData.revenue.configured !== false
+      ? metricsData.revenue
+      : null;
+    const ios = metricsData && metricsData.ios ? metricsData.ios : {};
+    const iosRevenue = ios.financial && ios.financial.configured !== false ? ios.financial : null;
+    return { android: metricsData?.android || {}, ios, androidRevenue, iosRevenue };
+  }
 
-    charts.revenue = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: labels.map((d) => d.slice(5)),
-        datasets: [
-          {
-            label: 'Android',
-            data: labels.map((d) => androidMap[d] || 0),
-            borderColor: '#4ade80',
-            backgroundColor: 'rgba(74, 222, 128, 0.12)',
-            fill: false,
-            tension: 0.3,
-            pointRadius: 2,
-          },
-          {
-            label: 'iOS',
-            data: labels.map((d) => iosMap[d] || 0),
-            borderColor: '#60a5fa',
-            backgroundColor: 'rgba(96, 165, 250, 0.12)',
-            fill: false,
-            tension: 0.3,
-            pointRadius: 2,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: { color: chartColors.text },
-          },
-        },
-        scales: {
-          x: {
-            grid: { color: chartColors.grid },
-            ticks: { color: chartColors.text, maxTicksLimit: 10 },
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: chartColors.grid },
-            ticks: { color: chartColors.text },
-          },
-        },
-      },
+  function monthsForRevenue(revenue) {
+    const monthSet = new Set();
+    (revenue?.revenueByMonth || []).forEach((item) => monthSet.add(item.month));
+    (revenue?.revenueByDay || []).forEach((item) => monthSet.add(item.date.slice(0, 7)));
+    return [...monthSet].sort().reverse();
+  }
+
+  function mergeMonthSeries(primary, secondary) {
+    const byMonth = new Map();
+    [...(secondary || []), ...(primary || [])].forEach((item) => {
+      if (item && item.month) byMonth.set(item.month, item);
+    });
+    return [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  async function ensureIosRevenueHistory() {
+    const iosFinancial = metricsData?.ios?.financial;
+    if (!iosFinancial || iosFinancial.historyLoaded || iosRevenueHistoryLoading) return;
+
+    iosRevenueHistoryLoading = true;
+    try {
+      const history = await api('/ios-revenue-history');
+      if (history && history.configured !== false) {
+        iosFinancial.revenueByMonth = mergeMonthSeries(
+          history.revenueByMonth || [],
+          iosFinancial.revenueByMonth || []
+        );
+        iosFinancial.allTime = iosFinancial.revenueByMonth.reduce((sum, item) => sum + Number(item.total || 0), 0);
+        iosFinancial.currency = history.currency || iosFinancial.currency || 'USD';
+        iosFinancial.historyLoaded = true;
+      } else if (history?.error) {
+        renderWarnings([...(metricsData.warnings || []), 'iOS revenue history: ' + history.error]);
+      }
+    } catch (err) {
+      renderWarnings([...(metricsData.warnings || []), 'iOS revenue history: ' + (err.message || 'request failed')]);
+    } finally {
+      iosRevenueHistoryLoading = false;
+    }
+  }
+
+  function configureChartControls(type) {
+    const isRevenue = type === 'ios-revenue' || type === 'android-revenue';
+    chartRange.parentElement.hidden = !isRevenue;
+    chartMonthControl.hidden = !isRevenue || chartRange.value !== 'month';
+
+    if (!isRevenue) return;
+
+    const { androidRevenue, iosRevenue } = getMetricSources();
+    const revenue = type === 'ios-revenue' ? iosRevenue : androidRevenue;
+    const months = monthsForRevenue(revenue);
+    chartMonth.innerHTML = months
+      .map((month) => '<option value="' + month + '">' + monthLabel(month) + '</option>')
+      .join('');
+
+    if (!months.length) {
+      chartMonth.innerHTML = '<option value="">No months</option>';
+    }
+  }
+
+  function revenueDataset(label, data, color) {
+    return {
+      label,
+      data,
+      borderColor: color,
+      backgroundColor: color.replace(')', ', 0.12)').replace('rgb', 'rgba'),
+      fill: false,
+      tension: 0.3,
+      pointRadius: 2,
+    };
+  }
+
+  function renderRevenueChart(title, revenue, color) {
+    chartTitle.textContent = title;
+    configureChartControls(activeChart);
+
+    if (chartRange.value === 'month') {
+      const selectedMonth = chartMonth.value;
+      const daily = (revenue?.revenueByDay || []).filter((item) => item.date.startsWith(selectedMonth));
+
+      if (daily.length) {
+        makeDetailLineChart(
+          daily.map((item) => item.date.slice(5)),
+          [revenueDataset(title, daily.map((item) => item.total), color)]
+        );
+        return;
+      }
+
+      const monthlyTotal = (revenue?.revenueByMonth || []).find((item) => item.month === selectedMonth);
+      makeDetailBarChart(
+        [selectedMonth ? monthLabel(selectedMonth) : 'Month'],
+        [monthlyTotal ? monthlyTotal.total : 0],
+        title,
+        color
+      );
+      return;
+    }
+
+    const monthly = revenue?.revenueByMonth || [];
+    makeDetailLineChart(
+      monthly.map((item) => monthLabel(item.month)),
+      [revenueDataset(title, monthly.map((item) => item.total), color)]
+    );
+  }
+
+  function renderActiveChart() {
+    if (!activeChart || !metricsData) return;
+
+    const { android, ios, androidRevenue, iosRevenue } = getMetricSources();
+    document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
+      card.classList.toggle('is-active', card.dataset.chart === activeChart);
+    });
+
+    if (activeChart === 'ios-revenue') {
+      renderRevenueChart('iOS proceeds', iosRevenue, chartColors.ios);
+      return;
+    }
+
+    if (activeChart === 'android-revenue') {
+      renderRevenueChart('Android revenue', androidRevenue, chartColors.android);
+      return;
+    }
+
+    chartRange.parentElement.hidden = true;
+    chartMonthControl.hidden = true;
+
+    if (activeChart === 'ios-subscriptions') {
+      chartTitle.textContent = 'iOS subscriptions';
+      makeDetailBarChart(
+        ['Active', 'Purchases (30d)'],
+        [iosRevenue?.activeSubscriptions || 0, iosRevenue?.subscriptionOrders30d || 0],
+        'Subscriptions',
+        [chartColors.ios, '#a78bfa']
+      );
+      return;
+    }
+
+    if (activeChart === 'android-subscriptions') {
+      chartTitle.textContent = 'Android subscription orders';
+      makeDetailBarChart(
+        ['Orders (30d)'],
+        [androidRevenue?.subscriptionOrders30d || 0],
+        'Orders',
+        chartColors.android
+      );
+      return;
+    }
+
+    if (activeChart === 'ios-rating' || activeChart === 'android-rating') {
+      const isIos = activeChart === 'ios-rating';
+      chartTitle.textContent = isIos ? 'iOS star distribution' : 'Android star distribution';
+      makeDetailBarChart(
+        ['1★', '2★', '3★', '4★', '5★'],
+        isIos ? ios.starDistribution || [0, 0, 0, 0, 0] : android.starDistribution || [0, 0, 0, 0, 0],
+        'Reviews',
+        chartColors.bars
+      );
+      return;
+    }
+
+    if (activeChart === 'android-crashes') {
+      chartTitle.textContent = 'Android crashes (7d)';
+      makeDetailBarChart(
+        ['Crash rate'],
+        [android.crashRate7d || 0],
+        'Crash rate %',
+        '#f87171'
+      );
+    }
+  }
+
+  async function openChart(type) {
+    activeChart = type;
+    chartPanel.hidden = false;
+    chartRange.value = 'all';
+    configureChartControls(type);
+    renderActiveChart();
+    if (type === 'ios-revenue') {
+      await ensureIosRevenueHistory();
+      configureChartControls(type);
+      renderActiveChart();
+    }
+    chartPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeChart() {
+    activeChart = null;
+    chartPanel.hidden = true;
+    destroyCharts();
+    document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
+      card.classList.remove('is-active');
     });
   }
 
@@ -315,11 +488,10 @@
       'stat-ios-revenue-note',
       ios && ios.note ? ios.note : 'Developer proceeds · App Store reports'
     );
-
-    makeRevenueChart(android, ios);
   }
 
   function renderMetrics(data) {
+    metricsData = data;
     const android = data.android || {};
     const ios = data.ios || {};
 
@@ -346,25 +518,9 @@
     document.getElementById('stat-api-status').textContent =
       parts.length ? parts.join(' + ') + ' connected' : 'API secrets not configured yet';
 
-    destroyCharts();
-
-    const starLabels = ['1★', '2★', '3★', '4★', '5★'];
-    makeBarChart(
-      'chart-android-stars',
-      starLabels,
-      android.starDistribution || [0, 0, 0, 0, 0],
-      'Reviews'
-    );
-    makeBarChart(
-      'chart-ios-stars',
-      starLabels,
-      ios.starDistribution || [0, 0, 0, 0, 0],
-      'Reviews'
-    );
-    makeComparisonChart(android.averageRating, ios.averageRating);
-
     renderRevenue(data.revenue, (data.ios && data.ios.financial) || null);
     renderWarnings(data.warnings);
+    if (activeChart) renderActiveChart();
   }
 
   async function loadMetrics() {
@@ -422,6 +578,26 @@
   });
 
   refreshBtn.addEventListener('click', loadMetrics);
+  chartClose.addEventListener('click', closeChart);
+  chartRange.addEventListener('change', async () => {
+    configureChartControls(activeChart);
+    if (activeChart === 'ios-revenue' && chartRange.value === 'all') {
+      await ensureIosRevenueHistory();
+      configureChartControls(activeChart);
+    }
+    renderActiveChart();
+  });
+  chartMonth.addEventListener('change', renderActiveChart);
+
+  document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
+    card.addEventListener('click', () => openChart(card.dataset.chart));
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openChart(card.dataset.chart);
+      }
+    });
+  });
 
   checkSession();
 })();
