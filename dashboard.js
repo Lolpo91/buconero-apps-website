@@ -289,12 +289,15 @@
     const { androidRevenue, iosRevenue } = getMetricSources();
     const revenue = type === 'ios-revenue' ? iosRevenue : androidRevenue;
     const months = monthsForRevenue(revenue);
+    const selectedMonth = chartMonth.value;
     chartMonth.innerHTML = months
       .map((month) => '<option value="' + month + '">' + monthLabel(month) + '</option>')
       .join('');
 
     if (!months.length) {
       chartMonth.innerHTML = '<option value="">No months</option>';
+    } else if (months.includes(selectedMonth)) {
+      chartMonth.value = selectedMonth;
     }
   }
 
@@ -352,7 +355,7 @@
     });
 
     if (activeChart === 'ios-revenue') {
-      renderRevenueChart('iOS proceeds', iosRevenue, chartColors.ios);
+      renderRevenueChart('iOS revenue', iosRevenue, chartColors.ios);
       return;
     }
 
@@ -472,7 +475,7 @@
     );
     setText(
       'stat-ios-revenue-currency',
-      ios && ios.currency ? ios.currency + ' · developer proceeds' : 'Needs APPLE_VENDOR_NUMBER'
+      ios && ios.currency ? ios.currency + ' · customer revenue' : 'Needs APPLE_VENDOR_NUMBER'
     );
     setText(
       'stat-ios-active-subscriptions',
@@ -486,7 +489,7 @@
     );
     setText(
       'stat-ios-revenue-note',
-      ios && ios.note ? ios.note : 'Developer proceeds · App Store reports'
+      ios && ios.note ? ios.note : 'Before Apple fees/taxes · App Store reports'
     );
   }
 

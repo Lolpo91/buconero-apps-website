@@ -120,20 +120,30 @@ function rowMatchesApp(row, headers, { appleAppId, appName, bundleId, appSku }) 
 
 function aggregateSalesReport(table, appContext) {
   if (!table || !table.rows.length) {
-    return { proceeds: 0, units: 0, subscriptionUnits: 0, currency: null, matchedRows: 0 };
+    return {
+      revenue: 0,
+      proceeds: 0,
+      units: 0,
+      subscriptionUnits: 0,
+      currency: null,
+      matchedRows: 0,
+    };
   }
 
   const proceedsIdx = columnIndex(table.headers, ['Developer Proceeds', 'Developer Proceeds ']);
+  const customerPriceIdx = columnIndex(table.headers, ['Customer Price']);
   const unitsIdx = columnIndex(table.headers, ['Units', 'Quantity']);
   const currencyIdx = columnIndex(table.headers, [
     'Currency of Proceeds',
     'Proceeds Currency',
     'Developer Proceeds Currency',
   ]);
+  const customerCurrencyIdx = columnIndex(table.headers, ['Customer Currency']);
   const productTypeIdx = columnIndex(table.headers, ['Product Type Identifier', 'Product Type']);
   const subscriptionTypes = new Set(['IA1', 'IAY', 'IAC', 'IAK', 'IAP', 'IAP1']);
   const targetCurrency = normalizeCurrency(appContext.currency || 'USD');
 
+  let revenue = 0;
   let proceeds = 0;
   let units = 0;
   let subscriptionUnits = 0;
@@ -144,18 +154,32 @@ function aggregateSalesReport(table, appContext) {
     if (!rowMatchesApp(row, table.headers, appContext)) continue;
 
     const rowCurrency = currencyIdx >= 0 ? normalizeCurrency(row[currencyIdx]) : '';
+    const rowCustomerCurrency =
+      customerCurrencyIdx >= 0 ? normalizeCurrency(row[customerCurrencyIdx]) : '';
+    const rowUnits = parseNumber(row[unitsIdx]);
+
     if (targetCurrency && rowCurrency && rowCurrency !== targetCurrency) continue;
+    if (targetCurrency && rowCustomerCurrency && rowCustomerCurrency !== targetCurrency) continue;
 
     matchedRows += 1;
-    proceeds += parseNumber(row[proceedsIdx]);
-    const rowUnits = parseNumber(row[unitsIdx]);
+    proceeds += parseNumber(row[proceedsIdx]) * rowUnits;
+    revenue += parseNumber(row[customerPriceIdx]) * rowUnits;
     units += rowUnits;
     const productType = productTypeIdx >= 0 ? String(row[productTypeIdx] || '').toUpperCase() : '';
     if (subscriptionTypes.has(productType)) subscriptionUnits += rowUnits;
-    if (!currency && rowCurrency) currency = rowCurrency;
+    if (!currency && (rowCustomerCurrency || rowCurrency)) currency = rowCustomerCurrency || rowCurrency;
   }
 
-  return { proceeds, units, subscriptionUnits, currency: currency || targetCurrency, matchedRows };
+  if (customerPriceIdx < 0) revenue = proceeds;
+
+  return {
+    revenue,
+    proceeds,
+    units,
+    subscriptionUnits,
+    currency: currency || targetCurrency,
+    matchedRows,
+  };
 }
 
 function aggregateSubscriptionReport(table, appContext) {
@@ -253,6 +277,8 @@ export async function fetchAppStoreFinancial(env, appleAppId, appContext = {}) {
   const currentMonth = formatMonthUTC(monthStart);
 
   const salesByDay = [];
+  let last30Revenue = 0;
+  let monthRevenue = 0;
   let last30Proceeds = 0;
   let monthProceeds = 0;
   let subscriptionOrders30d = 0;
@@ -281,11 +307,15 @@ export async function fetchAppStoreFinancial(env, appleAppId, appContext = {}) {
     const { reportDate, stats } = entry;
     totalMatchedRows += stats.matchedRows;
     if (stats.currency) currency = stats.currency;
+    last30Revenue += stats.revenue;
     last30Proceeds += stats.proceeds;
     subscriptionOrders30d += stats.subscriptionUnits;
-    if (reportDate >= monthStartStr) monthProceeds += stats.proceeds;
-    if (stats.proceeds > 0) {
-      salesByDay.push({ date: reportDate, total: Math.round(stats.proceeds * 100) / 100 });
+    if (reportDate >= monthStartStr) {
+      monthRevenue += stats.revenue;
+      monthProceeds += stats.proceeds;
+    }
+    if (stats.revenue > 0) {
+      salesByDay.push({ date: reportDate, total: Math.round(stats.revenue * 100) / 100 });
     }
   }
 
@@ -304,12 +334,14 @@ export async function fetchAppStoreFinancial(env, appleAppId, appContext = {}) {
         const stats = aggregateSalesReport(monthlyTable, context);
         totalMatchedRows += stats.matchedRows;
         if (stats.currency) currency = stats.currency;
-        if (stats.proceeds > 0) {
+        if (stats.revenue > 0) {
+          monthRevenue = stats.revenue;
+          last30Revenue = stats.revenue;
           monthProceeds = stats.proceeds;
           last30Proceeds = stats.proceeds;
           salesByDay.push({
             date: monthStartStr,
-            total: Math.round(stats.proceeds * 100) / 100,
+            total: Math.round(stats.revenue * 100) / 100,
           });
         }
         subscriptionOrders30d += stats.subscriptionUnits;
@@ -345,18 +377,20 @@ export async function fetchAppStoreFinancial(env, appleAppId, appContext = {}) {
   const result = {
     configured: true,
     currency,
-    last30Days: Math.round(last30Proceeds * 100) / 100,
-    monthToDate: Math.round(monthProceeds * 100) / 100,
+    last30Days: Math.round(last30Revenue * 100) / 100,
+    monthToDate: Math.round(monthRevenue * 100) / 100,
+    proceedsLast30Days: Math.round(last30Proceeds * 100) / 100,
+    proceedsMonthToDate: Math.round(monthProceeds * 100) / 100,
     subscriptionOrders30d,
     activeSubscriptions,
     revenueByDay: salesByDay,
-    revenueByMonth: monthProceeds > 0 ? [{
+    revenueByMonth: monthRevenue > 0 ? [{
       month: currentMonth,
-      total: Math.round(monthProceeds * 100) / 100,
+      total: Math.round(monthRevenue * 100) / 100,
     }] : [],
-    allTime: Math.round(monthProceeds * 100) / 100,
+    allTime: Math.round(monthRevenue * 100) / 100,
     source: 'sales_reports',
-    note: 'USD developer proceeds from App Store Connect sales reports (next-day data).',
+    note: 'USD customer revenue from App Store Connect sales reports (before Apple fees/taxes).',
   };
 
   if (firstError) {
@@ -406,12 +440,12 @@ export async function fetchAppStoreMonthlyRevenue(env, appleAppId, appContext = 
       if (!firstError) firstError = entry.error;
       continue;
     }
-    if (entry.status !== 'ok' || !entry.stats || entry.stats.proceeds <= 0) continue;
+    if (entry.status !== 'ok' || !entry.stats || entry.stats.revenue <= 0) continue;
 
     if (entry.stats.currency) currency = entry.stats.currency;
     revenueByMonth.push({
       month: entry.reportDate,
-      total: Math.round(entry.stats.proceeds * 100) / 100,
+      total: Math.round(entry.stats.revenue * 100) / 100,
     });
   }
 
@@ -423,7 +457,7 @@ export async function fetchAppStoreMonthlyRevenue(env, appleAppId, appContext = 
     revenueByMonth,
     allTime: Math.round(revenueByMonth.reduce((sum, item) => sum + item.total, 0) * 100) / 100,
     source: 'sales_reports',
-    note: 'USD developer proceeds from App Store Connect monthly sales reports.',
+    note: 'USD customer revenue from App Store Connect monthly sales reports.',
   };
 
   if (firstError) {
