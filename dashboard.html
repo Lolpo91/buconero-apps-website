@@ -82,6 +82,19 @@
       </article>
     </section>
 
+    <section class="dashboard-stats" aria-label="Retention">
+      <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-retention" role="button" tabindex="0" aria-label="Show Android retention chart">
+        <p class="dashboard-stat-label">Android retention (D1)</p>
+        <p class="dashboard-stat-value" id="stat-android-retention-d1">—</p>
+        <p class="dashboard-stat-sub" id="stat-android-retention-sub">D7 · D30</p>
+      </article>
+      <article class="dashboard-stat-card dashboard-stat-card-ios dashboard-chart-trigger" data-chart="ios-retention" role="button" tabindex="0" aria-label="Show iOS retention chart">
+        <p class="dashboard-stat-label">iOS retention (D1)</p>
+        <p class="dashboard-stat-value" id="stat-ios-retention-d1">—</p>
+        <p class="dashboard-stat-sub" id="stat-ios-retention-sub">D7 · D28</p>
+      </article>
+    </section>
+
     <section class="dashboard-stats" aria-label="Overview">
       <article class="dashboard-stat-card dashboard-chart-trigger" data-chart="android-rating" role="button" tabindex="0" aria-label="Show Android rating chart">
         <p class="dashboard-stat-label">Android rating</p>
@@ -140,6 +153,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-  <script src="dashboard.js?v=20260621-4"></script>
+  <script src="dashboard.js?v=20260621-5"></script>
 </body>
 </html>

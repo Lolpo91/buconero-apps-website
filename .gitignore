@@ -9,3 +9,4 @@ worker/.wrangler/
 *.p8
 service-account*.json
 google-credentials.json
+.credentials/

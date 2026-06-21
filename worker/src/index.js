@@ -78,6 +78,7 @@ export default {
 
       const { fetchPlayMetrics } = await import('./google-play.js');
       const { fetchPlayRevenue } = await import('./google-play-revenue.js');
+      const { fetchPlayRetention } = await import('./google-play-retention.js');
       const { fetchAppStoreMetrics } = await import('./app-store.js');
 
       const warnings = [];
@@ -102,6 +103,16 @@ export default {
               if (revenue.error && !revenue.last30Days && revenue.last30Days !== 0) {
                 warnings.push('Revenue: ' + revenue.error);
               }
+
+              try {
+                const retention = await fetchPlayRetention(env, serviceAccount, play.packageName);
+                android = { ...android, retention };
+                if (retention.error && retention.day1 == null) {
+                  warnings.push('Android retention: ' + retention.error);
+                }
+              } catch (err) {
+                warnings.push('Android retention: ' + (err.message || 'request failed'));
+              }
             }
           } catch (err) {
             warnings.push('Revenue: ' + (err.message || 'request failed'));
@@ -122,6 +133,9 @@ export default {
             warnings.push('iOS revenue: ' + appStore.financial.error);
           } else if (appStore.financial?.warning) {
             warnings.push('iOS revenue: ' + appStore.financial.warning);
+          }
+          if (appStore.retention?.error && appStore.retention.day1 == null) {
+            warnings.push('iOS retention: ' + appStore.retention.error);
           }
         } else if (appStore.error) {
           warnings.push('App Store: ' + appStore.error);

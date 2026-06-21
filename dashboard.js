@@ -82,9 +82,20 @@
     return value.toFixed(1) + '★';
   }
 
+  function formatPercent(value) {
+    if (value == null || Number.isNaN(value)) return '—';
+    return value.toFixed(1) + '%';
+  }
+
   function formatCount(value) {
     if (value == null) return '—';
     return Number(value).toLocaleString('en-US');
+  }
+
+  function formatRetentionSub(parts) {
+    return parts
+      .map((part) => part.label + ' ' + formatPercent(part.value))
+      .join(' · ');
   }
 
   function destroyCharts() {
@@ -97,7 +108,7 @@
   }
 
   function hasChartData(data) {
-    return Array.isArray(data) && data.some((value) => Number(value) > 0);
+    return Array.isArray(data) && data.some((value) => value != null && Number(value) >= 0);
   }
 
   function setChartEmpty(isEmpty) {
@@ -234,12 +245,15 @@
   }
 
   function getMetricSources() {
+    const android = metricsData?.android || {};
+    const ios = metricsData && metricsData.ios ? metricsData.ios : {};
     const androidRevenue = metricsData && metricsData.revenue && metricsData.revenue.configured !== false
       ? metricsData.revenue
       : null;
-    const ios = metricsData && metricsData.ios ? metricsData.ios : {};
     const iosRevenue = ios.financial && ios.financial.configured !== false ? ios.financial : null;
-    return { android: metricsData?.android || {}, ios, androidRevenue, iosRevenue };
+    const androidRetention = android.retention && android.retention.configured !== false ? android.retention : null;
+    const iosRetention = ios.retention && ios.retention.configured !== false ? ios.retention : null;
+    return { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention };
   }
 
   function isValidMonth(value) {
@@ -354,6 +368,31 @@
     }
   }
 
+  function renderRetentionChart(title, retention, keys, colors) {
+    chartTitle.textContent = title;
+    const series = retention?.retentionByDay || [];
+    if (!series.length) {
+      setChartEmpty(true);
+      return;
+    }
+
+    const labels = series.map((item) => (item.date ? item.date.slice(5) : ''));
+    const datasets = keys
+      .map((key, index) => {
+        const data = series.map((item) => item[key.key]);
+        if (!hasChartData(data)) return null;
+        return revenueDataset(key.label, data, colors[index] || chartColors.ios);
+      })
+      .filter(Boolean);
+
+    if (!datasets.length) {
+      setChartEmpty(true);
+      return;
+    }
+
+    makeDetailLineChart(labels, datasets);
+  }
+
   function revenueDataset(label, data, color) {
     return {
       label,
@@ -405,7 +444,7 @@
   async function renderActiveChart() {
     if (!activeChart || !metricsData) return;
 
-    const { android, ios, androidRevenue, iosRevenue } = getMetricSources();
+    const { android, ios, androidRevenue, iosRevenue, androidRetention, iosRetention } = getMetricSources();
     document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
       card.classList.toggle('is-active', card.dataset.chart === activeChart);
     });
@@ -467,6 +506,34 @@
         [android.crashRate7d || 0],
         'Crash rate %',
         '#f87171'
+      );
+      return;
+    }
+
+    if (activeChart === 'android-retention') {
+      renderRetentionChart(
+        'Android retention',
+        androidRetention,
+        [
+          { key: 'day1', label: 'Day 1' },
+          { key: 'day7', label: 'Day 7' },
+          { key: 'day30', label: 'Day 30' },
+        ],
+        [chartColors.android, '#34d399', '#a7f3d0']
+      );
+      return;
+    }
+
+    if (activeChart === 'ios-retention') {
+      renderRetentionChart(
+        'iOS retention',
+        iosRetention,
+        [
+          { key: 'day1', label: 'Day 1' },
+          { key: 'day7', label: 'Day 7' },
+          { key: 'day28', label: 'Day 28' },
+        ],
+        [chartColors.ios, '#818cf8', '#c4b5fd']
       );
     }
   }
@@ -556,7 +623,34 @@
     );
   }
 
-  function renderMetrics(data) {
+  function renderRetention(android, ios) {
+    const androidRetention = android?.retention && android.retention.configured !== false ? android.retention : null;
+    const iosRetention = ios?.retention && ios.retention.configured !== false ? ios.retention : null;
+
+    setText('stat-android-retention-d1', formatPercent(androidRetention?.day1));
+    setText(
+      'stat-android-retention-sub',
+      androidRetention
+        ? formatRetentionSub([
+            { label: 'D7', value: androidRetention.day7 },
+            { label: 'D30', value: androidRetention.day30 },
+          ])
+        : 'Installer retention · Play Console'
+    );
+
+    setText('stat-ios-retention-d1', formatPercent(iosRetention?.day1));
+    setText(
+      'stat-ios-retention-sub',
+      iosRetention
+        ? formatRetentionSub([
+            { label: 'D7', value: iosRetention.day7 },
+            { label: 'D28', value: iosRetention.day28 ?? iosRetention.day30 },
+          ])
+        : 'User retention · App Analytics'
+    );
+  }
+
+  async function renderMetrics(data) {
     metricsData = data;
     const android = data.android || {};
     const ios = data.ios || {};
@@ -585,6 +679,7 @@
       parts.length ? parts.join(' + ') + ' connected' : 'API secrets not configured yet';
 
     renderRevenue(data.revenue, (data.ios && data.ios.financial) || null);
+    renderRetention(android, ios);
     renderWarnings(data.warnings);
     if (activeChart) await renderActiveChart();
   }
@@ -593,7 +688,7 @@
     refreshBtn.disabled = true;
     try {
       const data = await api('/metrics');
-      renderMetrics(data);
+      await renderMetrics(data);
     } catch (err) {
       if (err.status === 401) {
         showLogin();

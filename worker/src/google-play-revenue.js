@@ -6,7 +6,7 @@ function parseAmount(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function parseCsv(text) {
+export function parseCsv(text) {
   const rows = [];
   let row = [];
   let field = '';
@@ -51,7 +51,7 @@ function parseCsv(text) {
   return rows.filter((r) => r.some((c) => String(c).trim() !== ''));
 }
 
-function decodeCsvBytes(bytes) {
+export function decodeCsvBytes(bytes) {
   if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
     return new TextDecoder('utf-16le').decode(bytes);
   }
@@ -95,7 +95,7 @@ async function unzipFirstCsv(zipBytes) {
   throw new Error('No CSV file found inside Play sales report zip');
 }
 
-async function gcsListObjects(token, bucket, prefix) {
+export async function gcsListObjects(token, bucket, prefix) {
   const items = [];
   let pageToken = '';
 
@@ -118,7 +118,7 @@ async function gcsListObjects(token, bucket, prefix) {
   return items;
 }
 
-async function gcsDownloadObject(token, bucket, objectName) {
+export async function gcsDownloadObject(token, bucket, objectName) {
   const url =
     'https://storage.googleapis.com/storage/v1/b/' +
     encodeURIComponent(bucket) +

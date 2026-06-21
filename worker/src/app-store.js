@@ -1,4 +1,5 @@
 import { appStoreFetchJson } from './app-store-auth.js';
+import { fetchAppStoreRetention } from './app-store-analytics.js';
 import {
   fetchAppStoreFinancial,
   fetchAppStoreMonthDaily,
@@ -67,15 +68,24 @@ export async function fetchAppStoreMetrics(env) {
   const reviews = await fetchAllIosReviews(env, app.id);
   const stats = aggregateIosReviews(reviews);
 
+  const appContext = {
+    appName: app.attributes?.name || bundleId,
+    bundleId,
+    appSku: app.attributes?.sku || '',
+  };
+
   let financial = { configured: false };
   try {
-    financial = await fetchAppStoreFinancial(env, app.id, {
-      appName: app.attributes?.name || bundleId,
-      bundleId,
-      appSku: app.attributes?.sku || '',
-    });
+    financial = await fetchAppStoreFinancial(env, app.id, appContext);
   } catch (err) {
     financial = { configured: false, error: err.message || 'Financial reports failed' };
+  }
+
+  let retention = { configured: false };
+  try {
+    retention = await fetchAppStoreRetention(env, app.id, appContext);
+  } catch (err) {
+    retention = { configured: false, error: err.message || 'Retention reports failed' };
   }
 
   return {
@@ -85,6 +95,7 @@ export async function fetchAppStoreMetrics(env) {
     appleAppId: app.id,
     ...stats,
     financial,
+    retention,
   };
 }
 

@@ -11,12 +11,15 @@ export async function appStoreToken(env) {
     .sign(key);
 }
 
-export async function appStoreFetchJson(env, path) {
+export async function appStoreFetchJson(env, path, options = {}) {
   const token = await appStoreToken(env);
   const res = await fetch('https://api.appstoreconnect.apple.com' + path, {
+    method: options.method || 'GET',
+    body: options.body,
     headers: {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/json',
+      ...options.headers,
     },
   });
 
