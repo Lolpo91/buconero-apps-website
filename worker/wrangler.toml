@@ -21,3 +21,4 @@ zone_name = "buconeroapps.com"
 #   npx wrangler secret put APPLE_KEY_ID
 #   npx wrangler secret put APPLE_ISSUER_ID
 #   npx wrangler secret put APPLE_PRIVATE_KEY
+#   npx wrangler secret put APPLE_VENDOR_NUMBER

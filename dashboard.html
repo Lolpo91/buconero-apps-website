@@ -52,18 +52,33 @@
     <section class="dashboard-stats dashboard-stats-revenue" aria-label="Revenue">
       <article class="dashboard-stat-card dashboard-stat-card-highlight">
         <p class="dashboard-stat-label">Android revenue (30d)</p>
-        <p class="dashboard-stat-value" id="stat-revenue-30d">—</p>
-        <p class="dashboard-stat-sub" id="stat-revenue-note">Estimated sales · before Google fees</p>
+        <p class="dashboard-stat-value" id="stat-android-revenue-30d">—</p>
+        <p class="dashboard-stat-sub" id="stat-android-revenue-note">Estimated sales · before Google fees</p>
+      </article>
+      <article class="dashboard-stat-card dashboard-stat-card-highlight dashboard-stat-card-ios">
+        <p class="dashboard-stat-label">iOS proceeds (30d)</p>
+        <p class="dashboard-stat-value" id="stat-ios-revenue-30d">—</p>
+        <p class="dashboard-stat-sub" id="stat-ios-revenue-note">Developer proceeds · App Store reports</p>
       </article>
       <article class="dashboard-stat-card">
         <p class="dashboard-stat-label">Android revenue (month)</p>
-        <p class="dashboard-stat-value" id="stat-revenue-month">—</p>
-        <p class="dashboard-stat-sub" id="stat-revenue-currency">—</p>
+        <p class="dashboard-stat-value" id="stat-android-revenue-month">—</p>
+        <p class="dashboard-stat-sub" id="stat-android-revenue-currency">—</p>
       </article>
       <article class="dashboard-stat-card">
-        <p class="dashboard-stat-label">Subscription orders (30d)</p>
-        <p class="dashboard-stat-value" id="stat-subscription-orders">—</p>
-        <p class="dashboard-stat-sub">Android · charged orders</p>
+        <p class="dashboard-stat-label">iOS proceeds (month)</p>
+        <p class="dashboard-stat-value" id="stat-ios-revenue-month">—</p>
+        <p class="dashboard-stat-sub" id="stat-ios-revenue-currency">—</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Android subscription orders (30d)</p>
+        <p class="dashboard-stat-value" id="stat-android-subscription-orders">—</p>
+        <p class="dashboard-stat-sub">Charged Play orders</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">iOS active subscriptions</p>
+        <p class="dashboard-stat-value" id="stat-ios-active-subscriptions">—</p>
+        <p class="dashboard-stat-sub" id="stat-ios-subscription-orders">— subscription purchases (30d)</p>
       </article>
     </section>
 
@@ -92,9 +107,9 @@
 
     <section class="dashboard-charts">
       <article class="dashboard-chart-card dashboard-chart-card-wide">
-        <h2>Android estimated revenue (30 days)</h2>
+        <h2>Revenue — Android vs iOS (30 days)</h2>
         <div class="dashboard-chart-wrap">
-          <canvas id="chart-revenue" aria-label="Android daily revenue"></canvas>
+          <canvas id="chart-revenue" aria-label="Android and iOS daily revenue"></canvas>
         </div>
       </article>
       <article class="dashboard-chart-card">

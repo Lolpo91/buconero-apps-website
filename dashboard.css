@@ -149,6 +149,15 @@
   background: linear-gradient(145deg, rgba(74, 222, 128, 0.06), var(--surface));
 }
 
+.dashboard-stat-card-ios {
+  border-color: rgba(96, 165, 250, 0.25);
+  background: linear-gradient(145deg, rgba(96, 165, 250, 0.06), var(--surface));
+}
+
+.dashboard-stats-revenue {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -227,6 +236,18 @@
 .dashboard-footer a {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-stats-revenue {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-stats-revenue {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {

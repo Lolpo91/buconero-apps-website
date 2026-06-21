@@ -68,6 +68,9 @@ export default {
         appStoreConfigured = !!appStore.configured;
         if (appStore.configured) {
           ios = appStore;
+          if (appStore.financial?.error) {
+            warnings.push('iOS revenue: ' + appStore.financial.error);
+          }
         } else if (appStore.error) {
           warnings.push('App Store: ' + appStore.error);
         }
