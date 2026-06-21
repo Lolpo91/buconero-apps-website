@@ -626,29 +626,39 @@
   }
 
   function renderRetention(android, ios) {
-    const androidRetention = android?.retention && android.retention.configured !== false ? android.retention : null;
-    const iosRetention = ios?.retention && ios.retention.configured !== false ? ios.retention : null;
+    const androidRetention = android?.retention || null;
+    const iosRetention = ios?.retention || null;
+    const hasAndroidRetention =
+      androidRetention &&
+      (androidRetention.day1 != null || androidRetention.day7 != null || androidRetention.day30 != null);
+    const hasIosRetention =
+      iosRetention &&
+      (iosRetention.day1 != null || iosRetention.day7 != null || iosRetention.day28 != null || iosRetention.day30 != null);
 
     setText('stat-android-retention-d1', formatPercent(androidRetention?.day1));
     setText(
       'stat-android-retention-sub',
-      androidRetention
+      hasAndroidRetention
         ? formatRetentionSub([
             { label: 'D7', value: androidRetention.day7 },
             { label: 'D30', value: androidRetention.day30 },
           ])
-        : 'Installer retention · Play Console'
+        : androidRetention?.error || androidRetention?.warning
+          ? androidRetention.error || androidRetention.warning
+          : 'Installer retention · Play Console'
     );
 
     setText('stat-ios-retention-d1', formatPercent(iosRetention?.day1));
     setText(
       'stat-ios-retention-sub',
-      iosRetention
+      hasIosRetention
         ? formatRetentionSub([
             { label: 'D7', value: iosRetention.day7 },
             { label: 'D28', value: iosRetention.day28 ?? iosRetention.day30 },
           ])
-        : 'User retention · App Analytics'
+        : iosRetention?.error || iosRetention?.warning
+          ? iosRetention.error || iosRetention.warning
+          : 'User retention · App Analytics'
     );
   }
 

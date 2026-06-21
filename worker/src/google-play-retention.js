@@ -132,7 +132,8 @@ export async function fetchPlayRetention(env, serviceAccount, packageName) {
   if (!reportObjects.length) {
     return {
       configured: true,
-      error: 'No retained installers reports found in the Play GCS bucket yet.',
+      error:
+        'No retained installers reports found in the Play GCS bucket. Google Play only exposes this metric if the retained installers export exists for the account.',
     };
   }
 
