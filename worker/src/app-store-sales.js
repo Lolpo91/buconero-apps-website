@@ -110,7 +110,7 @@ export async function fetchAppStoreFinancial(env, appleAppId) {
     };
   }
 
-  const dates = recentDates(31);
+  const dates = recentDates(14);
   const monthStart = new Date();
   monthStart.setUTCDate(1);
   const monthStartStr = formatDateUTC(monthStart);
@@ -122,26 +122,33 @@ export async function fetchAppStoreFinancial(env, appleAppId) {
   let currency = 'USD';
   let activeSubscriptions = 0;
 
-  for (const reportDate of dates) {
-    try {
-      const table = await loadReport(env, {
-        vendorNumber,
-        reportType: 'SALES',
-        reportSubType: 'SUMMARY',
-        frequency: 'DAILY',
-        reportDate,
-        version: '1_0',
-      });
-      const stats = aggregateSalesReport(table, appleAppId);
-      if (stats.currency) currency = stats.currency;
-      last30Proceeds += stats.proceeds;
-      subscriptionOrders30d += stats.subscriptionUnits;
-      if (reportDate >= monthStartStr) monthProceeds += stats.proceeds;
-      if (stats.proceeds > 0) {
-        salesByDay.push({ date: reportDate, total: Math.round(stats.proceeds * 100) / 100 });
+  const salesResults = await Promise.all(
+    dates.map(async (reportDate) => {
+      try {
+        const table = await loadReport(env, {
+          vendorNumber,
+          reportType: 'SALES',
+          reportSubType: 'SUMMARY',
+          frequency: 'DAILY',
+          reportDate,
+          version: '1_0',
+        });
+        return { reportDate, stats: aggregateSalesReport(table, appleAppId) };
+      } catch {
+        return null;
       }
-    } catch {
-      /* report may not exist for that day yet */
+    })
+  );
+
+  for (const entry of salesResults) {
+    if (!entry) continue;
+    const { reportDate, stats } = entry;
+    if (stats.currency) currency = stats.currency;
+    last30Proceeds += stats.proceeds;
+    subscriptionOrders30d += stats.subscriptionUnits;
+    if (reportDate >= monthStartStr) monthProceeds += stats.proceeds;
+    if (stats.proceeds > 0) {
+      salesByDay.push({ date: reportDate, total: Math.round(stats.proceeds * 100) / 100 });
     }
   }
 

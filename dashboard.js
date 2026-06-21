@@ -259,35 +259,62 @@
     });
   }
 
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
   function renderRevenue(androidRevenue, iosFinancial) {
     const android = androidRevenue && androidRevenue.configured !== false ? androidRevenue : null;
     const ios = iosFinancial && iosFinancial.configured !== false ? iosFinancial : null;
 
-    document.getElementById('stat-android-revenue-30d').textContent =
-      android && android.last30Days != null ? formatMoney(android.last30Days, android.currency) : '—';
-    document.getElementById('stat-android-revenue-month').textContent =
-      android && android.monthToDate != null ? formatMoney(android.monthToDate, android.currency) : '—';
-    document.getElementById('stat-android-revenue-currency').textContent =
-      android && android.currency ? android.currency + ' · estimated sales' : 'Needs Play GCS bucket';
-    document.getElementById('stat-android-subscription-orders').textContent =
-      android && android.subscriptionOrders30d != null ? formatCount(android.subscriptionOrders30d) : '—';
-    document.getElementById('stat-android-revenue-note').textContent =
-      android && android.note ? android.note : 'Estimated sales · before Google fees';
+    setText(
+      'stat-android-revenue-30d',
+      android && android.last30Days != null ? formatMoney(android.last30Days, android.currency) : '—'
+    );
+    setText(
+      'stat-android-revenue-month',
+      android && android.monthToDate != null ? formatMoney(android.monthToDate, android.currency) : '—'
+    );
+    setText(
+      'stat-android-revenue-currency',
+      android && android.currency ? android.currency + ' · estimated sales' : 'Needs Play GCS bucket'
+    );
+    setText(
+      'stat-android-subscription-orders',
+      android && android.subscriptionOrders30d != null ? formatCount(android.subscriptionOrders30d) : '—'
+    );
+    setText(
+      'stat-android-revenue-note',
+      android && android.note ? android.note : 'Estimated sales · before Google fees'
+    );
 
-    document.getElementById('stat-ios-revenue-30d').textContent =
-      ios && ios.last30Days != null ? formatMoney(ios.last30Days, ios.currency) : '—';
-    document.getElementById('stat-ios-revenue-month').textContent =
-      ios && ios.monthToDate != null ? formatMoney(ios.monthToDate, ios.currency) : '—';
-    document.getElementById('stat-ios-revenue-currency').textContent =
-      ios && ios.currency ? ios.currency + ' · developer proceeds' : 'Needs APPLE_VENDOR_NUMBER';
-    document.getElementById('stat-ios-active-subscriptions').textContent =
-      ios && ios.activeSubscriptions != null ? formatCount(ios.activeSubscriptions) : '—';
-    document.getElementById('stat-ios-subscription-orders').textContent =
+    setText(
+      'stat-ios-revenue-30d',
+      ios && ios.last30Days != null ? formatMoney(ios.last30Days, ios.currency) : '—'
+    );
+    setText(
+      'stat-ios-revenue-month',
+      ios && ios.monthToDate != null ? formatMoney(ios.monthToDate, ios.currency) : '—'
+    );
+    setText(
+      'stat-ios-revenue-currency',
+      ios && ios.currency ? ios.currency + ' · developer proceeds' : 'Needs APPLE_VENDOR_NUMBER'
+    );
+    setText(
+      'stat-ios-active-subscriptions',
+      ios && ios.activeSubscriptions != null ? formatCount(ios.activeSubscriptions) : '—'
+    );
+    setText(
+      'stat-ios-subscription-orders',
       ios && ios.subscriptionOrders30d != null
         ? formatCount(ios.subscriptionOrders30d) + ' subscription purchases (30d)'
-        : '— subscription purchases (30d)';
-    document.getElementById('stat-ios-revenue-note').textContent =
-      ios && ios.note ? ios.note : 'Developer proceeds · App Store reports';
+        : '— subscription purchases (30d)'
+    );
+    setText(
+      'stat-ios-revenue-note',
+      ios && ios.note ? ios.note : 'Developer proceeds · App Store reports'
+    );
 
     makeRevenueChart(android, ios);
   }
