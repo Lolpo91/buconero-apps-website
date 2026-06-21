@@ -13,7 +13,8 @@ APPLE_BUNDLE_ID = "com.cardgradingai.app"
 pattern = "buconeroapps.com/api/*"
 zone_name = "buconeroapps.com"
 
-# Required secrets (set via CLI, never commit):
+# Optional: Play Console financial reports bucket (pubsite_prod_rev_…)
+# GOOGLE_PLAY_GCS_BUCKET = "pubsite_prod_rev_XXXXXXXXX"
 #   npx wrangler secret put DASHBOARD_PASSWORD
 #   npx wrangler secret put SESSION_SECRET
 #   npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON

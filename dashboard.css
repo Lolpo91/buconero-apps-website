@@ -140,6 +140,15 @@
   margin: 0.5rem 0 0 1.15rem;
 }
 
+.dashboard-stats-revenue {
+  margin-bottom: 1rem;
+}
+
+.dashboard-stat-card-highlight {
+  border-color: rgba(74, 222, 128, 0.25);
+  background: linear-gradient(145deg, rgba(74, 222, 128, 0.06), var(--surface));
+}
+
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

@@ -188,6 +188,78 @@
       .replace(/"/g, '&quot;');
   }
 
+  function formatMoney(value, currency) {
+    if (value == null || Number.isNaN(value)) return '—';
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency || 'USD',
+        maximumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return value.toLocaleString('en-US') + (currency ? ' ' + currency : '');
+    }
+  }
+
+  function makeRevenueChart(revenueByDay, currency) {
+    const canvas = document.getElementById('chart-revenue');
+    if (!canvas) return;
+
+    const labels = (revenueByDay || []).map((d) => d.date.slice(5));
+    const data = (revenueByDay || []).map((d) => d.total);
+
+    charts.revenue = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue (' + (currency || '') + ')',
+          data,
+          borderColor: '#4ade80',
+          backgroundColor: 'rgba(74, 222, 128, 0.12)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            grid: { color: chartColors.grid },
+            ticks: { color: chartColors.text, maxTicksLimit: 10 },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: chartColors.grid },
+            ticks: { color: chartColors.text },
+          },
+        },
+      },
+    });
+  }
+
+  function renderRevenue(revenue) {
+    const rev = revenue && revenue.configured !== false ? revenue : null;
+
+    document.getElementById('stat-revenue-30d').textContent =
+      rev && rev.last30Days != null ? formatMoney(rev.last30Days, rev.currency) : '—';
+    document.getElementById('stat-revenue-month').textContent =
+      rev && rev.monthToDate != null ? formatMoney(rev.monthToDate, rev.currency) : '—';
+    document.getElementById('stat-revenue-currency').textContent =
+      rev && rev.currency ? rev.currency + ' · estimated sales' : 'Configure GCS bucket for revenue';
+    document.getElementById('stat-subscription-orders').textContent =
+      rev && rev.subscriptionOrders30d != null ? formatCount(rev.subscriptionOrders30d) : '—';
+    document.getElementById('stat-revenue-note').textContent =
+      rev && rev.note ? rev.note : 'Estimated sales · before Google fees';
+
+    makeRevenueChart(rev && rev.revenueByDay, rev && rev.currency);
+  }
+
   function renderMetrics(data) {
     const android = data.android || {};
     const ios = data.ios || {};
@@ -232,6 +304,7 @@
     );
     makeComparisonChart(android.averageRating, ios.averageRating);
 
+    renderRevenue(data.revenue);
     renderWarnings(data.warnings);
   }
 

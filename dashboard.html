@@ -49,6 +49,24 @@
 
     <div id="api-warnings" class="dashboard-warnings" hidden></div>
 
+    <section class="dashboard-stats dashboard-stats-revenue" aria-label="Revenue">
+      <article class="dashboard-stat-card dashboard-stat-card-highlight">
+        <p class="dashboard-stat-label">Android revenue (30d)</p>
+        <p class="dashboard-stat-value" id="stat-revenue-30d">—</p>
+        <p class="dashboard-stat-sub" id="stat-revenue-note">Estimated sales · before Google fees</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Android revenue (month)</p>
+        <p class="dashboard-stat-value" id="stat-revenue-month">—</p>
+        <p class="dashboard-stat-sub" id="stat-revenue-currency">—</p>
+      </article>
+      <article class="dashboard-stat-card">
+        <p class="dashboard-stat-label">Subscription orders (30d)</p>
+        <p class="dashboard-stat-value" id="stat-subscription-orders">—</p>
+        <p class="dashboard-stat-sub">Android · charged orders</p>
+      </article>
+    </section>
+
     <section class="dashboard-stats" aria-label="Overview">
       <article class="dashboard-stat-card">
         <p class="dashboard-stat-label">Android rating</p>
@@ -73,6 +91,12 @@
     </section>
 
     <section class="dashboard-charts">
+      <article class="dashboard-chart-card dashboard-chart-card-wide">
+        <h2>Android estimated revenue (30 days)</h2>
+        <div class="dashboard-chart-wrap">
+          <canvas id="chart-revenue" aria-label="Android daily revenue"></canvas>
+        </div>
+      </article>
       <article class="dashboard-chart-card">
         <h2>Star distribution — Android</h2>
         <div class="dashboard-chart-wrap">

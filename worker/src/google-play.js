@@ -14,12 +14,16 @@ function base64UrlEncode(bytes) {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function googleAccessToken(serviceAccount) {
+async function googleAccessToken(serviceAccount, extraScopes) {
+  const scopes = extraScopes || [
+    'https://www.googleapis.com/auth/androidpublisher',
+    'https://www.googleapis.com/auth/playdeveloperreporting',
+  ];
   const now = Math.floor(Date.now() / 1000);
   const header = base64UrlEncode(new TextEncoder().encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
   const claim = {
     iss: serviceAccount.client_email,
-    scope: 'https://www.googleapis.com/auth/androidpublisher https://www.googleapis.com/auth/playdeveloperreporting',
+    scope: scopes.join(' '),
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,
@@ -58,6 +62,8 @@ async function googleAccessToken(serviceAccount) {
   }
   return data.access_token;
 }
+
+export { googleAccessToken };
 
 function aggregateReviews(reviews) {
   const stars = [0, 0, 0, 0, 0];

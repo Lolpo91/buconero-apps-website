@@ -27,11 +27,13 @@ export default {
       }
 
       const { fetchPlayMetrics } = await import('./google-play.js');
+      const { fetchPlayRevenue } = await import('./google-play-revenue.js');
       const { fetchAppStoreMetrics } = await import('./app-store.js');
 
       const warnings = [];
       let android = { reviewCount: 0, averageRating: null, starDistribution: [0, 0, 0, 0, 0] };
       let ios = { reviewCount: 0, averageRating: null, starDistribution: [0, 0, 0, 0, 0] };
+      let revenue = null;
       let playConfigured = false;
       let appStoreConfigured = false;
 
@@ -40,6 +42,20 @@ export default {
         playConfigured = !!play.configured;
         if (play.configured) {
           android = play;
+          try {
+            let serviceAccount = null;
+            if (env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+              serviceAccount = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON);
+            }
+            if (serviceAccount) {
+              revenue = await fetchPlayRevenue(env, serviceAccount, play.packageName);
+              if (revenue.error && !revenue.last30Days && revenue.last30Days !== 0) {
+                warnings.push('Revenue: ' + revenue.error);
+              }
+            }
+          } catch (err) {
+            warnings.push('Revenue: ' + (err.message || 'request failed'));
+          }
         } else if (play.error) {
           warnings.push('Google Play: ' + play.error);
         }
@@ -71,6 +87,7 @@ export default {
           configured: { play: playConfigured, appStore: appStoreConfigured },
           android,
           ios,
+          revenue,
           warnings,
         }),
         { status: 200, headers }
