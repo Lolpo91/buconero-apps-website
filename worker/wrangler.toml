@@ -7,12 +7,10 @@ compatibility_date = "2024-11-01"
 PLAY_PACKAGE_NAME = "com.gradeai.yourapp"
 APPLE_BUNDLE_ID = "com.cardgradingai.app"
 
-# After first deploy, add a route in Cloudflare Dashboard:
-#   buconeroapps.com/api/*
-# Or uncomment and set your zone:
-# [[routes]]
-# pattern = "buconeroapps.com/api/*"
-# zone_name = "buconeroapps.com"
+# Route: API on your domain (GitHub Pages serves the rest)
+[[routes]]
+pattern = "buconeroapps.com/api/*"
+zone_name = "buconeroapps.com"
 
 # Required secrets (set via CLI, never commit):
 #   npx wrangler secret put DASHBOARD_PASSWORD

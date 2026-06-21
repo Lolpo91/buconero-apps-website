@@ -103,7 +103,7 @@ function clearSessionCookieHeader() {
   return COOKIE_NAME + '=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0';
 }
 
-async function requireAuth(request, env) {
+export async function requireAuth(request, env) {
   const token = getSessionCookie(request);
   const session = await verifySession(env, token);
   if (!session) return null;
