@@ -11,15 +11,17 @@ function json(data, status = 200, extraHeaders = {}) {
   });
 }
 
-function corsHeaders(request) {
+export function corsHeaders(request) {
   const origin = request.headers.get('Origin');
-  const allowed = origin && origin.includes('buconeroapps.com');
+  const allowed =
+    origin &&
+    (origin.includes('buconeroapps.com') || origin.includes('github.io') || origin.includes('localhost'));
   if (!allowed) return {};
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 }
 
@@ -94,6 +96,12 @@ function getSessionCookie(request) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+function getSessionToken(request) {
+  const auth = request.headers.get('Authorization') || '';
+  if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+  return getSessionCookie(request);
+}
+
 function sessionCookieHeader(token) {
   return COOKIE_NAME + '=' + encodeURIComponent(token) +
     '; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=' + SESSION_TTL_SEC;
@@ -104,7 +112,7 @@ function clearSessionCookieHeader() {
 }
 
 export async function requireAuth(request, env) {
-  const token = getSessionCookie(request);
+  const token = getSessionToken(request);
   const session = await verifySession(env, token);
   if (!session) return null;
   return session;
@@ -132,7 +140,7 @@ export async function handleAuth(request, env, pathname) {
     const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SEC;
     const token = await signSession(env, { exp });
     headers['Set-Cookie'] = sessionCookieHeader(token);
-    return json({ ok: true }, 200, headers);
+    return json({ ok: true, token }, 200, headers);
   }
 
   if (pathname === '/api/auth/logout' && request.method === 'POST') {

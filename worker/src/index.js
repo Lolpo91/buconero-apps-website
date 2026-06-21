@@ -1,4 +1,4 @@
-import { handleAuth, requireAuth } from './auth.js';
+import { handleAuth, requireAuth, corsHeaders } from './auth.js';
 import { fetchPlayMetrics } from './google-play.js';
 import { fetchAppStoreMetrics } from './app-store.js';
 
@@ -8,7 +8,14 @@ export default {
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
     const headers = {
       'Content-Type': 'application/json',
+      ...cors,
     };
+
+    const cors = corsHeaders(request);
+
+    if (request.method === 'OPTIONS' && pathname.startsWith('/api/')) {
+      return new Response(null, { status: 204, headers: cors });
+    }
 
     const authResponse = await handleAuth(request, env, pathname);
     if (authResponse) return authResponse;

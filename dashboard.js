@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const API_BASE = '/api';
+  const API_BASE = 'https://buconero-dashboard-api.buconero.workers.dev/api';
+  const SESSION_KEY = 'buconero_dashboard_token';
 
   const loginScreen = document.getElementById('login-screen');
   const dashboardScreen = document.getElementById('dashboard-screen');
@@ -38,11 +39,17 @@
     dashboardScreen.classList.remove('hidden');
   }
 
+  function authHeaders(extra) {
+    const headers = { 'Content-Type': 'application/json', ...extra };
+    const token = sessionStorage.getItem(SESSION_KEY);
+    if (token) headers.Authorization = 'Bearer ' + token;
+    return headers;
+  }
+
   async function api(path, options) {
     const res = await fetch(API_BASE + path, {
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
       ...options,
+      headers: authHeaders(options && options.headers),
     });
 
     const data = await res.json().catch(() => ({}));
@@ -259,10 +266,11 @@
     loginError.hidden = true;
 
     try {
-      await api('/auth/login', {
+      const data = await api('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ password: passwordInput.value }),
       });
+      if (data.token) sessionStorage.setItem(SESSION_KEY, data.token);
       showDashboard();
       await loadMetrics();
     } catch (err) {
@@ -277,6 +285,7 @@
     } catch {
       /* ignore */
     }
+    sessionStorage.removeItem(SESSION_KEY);
     showLogin();
   });
 

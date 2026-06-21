@@ -1,6 +1,7 @@
 name = "buconero-dashboard-api"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
+workers_dev = true
 
 # Public app identifiers (not secrets)
 [vars]
