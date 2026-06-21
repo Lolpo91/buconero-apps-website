@@ -1,17 +1,14 @@
 import { handleAuth, requireAuth, corsHeaders } from './auth.js';
-import { fetchPlayMetrics } from './google-play.js';
-import { fetchAppStoreMetrics } from './app-store.js';
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, '') || '/';
+    const cors = corsHeaders(request);
     const headers = {
       'Content-Type': 'application/json',
       ...cors,
     };
-
-    const cors = corsHeaders(request);
 
     if (request.method === 'OPTIONS' && pathname.startsWith('/api/')) {
       return new Response(null, { status: 204, headers: cors });
@@ -28,6 +25,9 @@ export default {
           headers,
         });
       }
+
+      const { fetchPlayMetrics } = await import('./google-play.js');
+      const { fetchAppStoreMetrics } = await import('./app-store.js');
 
       const warnings = [];
       let android = { reviewCount: 0, averageRating: null, starDistribution: [0, 0, 0, 0, 0] };
