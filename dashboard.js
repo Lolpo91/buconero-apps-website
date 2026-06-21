@@ -24,6 +24,9 @@
   let activeChart = null;
   let metricsData = null;
   let iosRevenueHistoryLoading = false;
+  let iosMonthDailyLoading = false;
+  let chartSelectedMonth = '';
+  let chartMonthsFingerprint = '';
 
   const chartColors = {
     grid: 'rgba(255, 255, 255, 0.06)',
@@ -239,6 +242,15 @@
     return { android: metricsData?.android || {}, ios, androidRevenue, iosRevenue };
   }
 
+  function isValidMonth(value) {
+    return /^\d{4}-\d{2}$/.test(String(value || '').trim());
+  }
+
+  function currentMonthKey() {
+    const now = new Date();
+    return now.getUTCFullYear() + '-' + String(now.getUTCMonth() + 1).padStart(2, '0');
+  }
+
   function monthsForRevenue(revenue) {
     const monthSet = new Set();
     (revenue?.revenueByMonth || []).forEach((item) => monthSet.add(item.month));
@@ -279,6 +291,37 @@
     }
   }
 
+  async function ensureIosMonthDaily(month) {
+    const iosFinancial = metricsData?.ios?.financial;
+    if (!iosFinancial || !isValidMonth(month)) return;
+
+    iosFinancial.revenueByDayByMonth = iosFinancial.revenueByDayByMonth || {};
+    if (iosFinancial.revenueByDayByMonth[month] || iosMonthDailyLoading) return;
+
+    iosMonthDailyLoading = true;
+    try {
+      const monthData = await api('/ios-revenue-month?month=' + encodeURIComponent(month));
+      if (monthData && monthData.configured !== false) {
+        iosFinancial.revenueByDayByMonth[month] = monthData.revenueByDay || [];
+      } else if (monthData?.error) {
+        renderWarnings([...(metricsData.warnings || []), 'iOS month revenue: ' + monthData.error]);
+      }
+    } catch (err) {
+      renderWarnings([...(metricsData.warnings || []), 'iOS month revenue: ' + (err.message || 'request failed')]);
+    } finally {
+      iosMonthDailyLoading = false;
+    }
+  }
+
+  function dailyForMonth(revenue, month) {
+    if (!isValidMonth(month)) return [];
+
+    const cached = revenue?.revenueByDayByMonth?.[month];
+    if (Array.isArray(cached)) return cached;
+
+    return (revenue?.revenueByDay || []).filter((item) => item.date.slice(0, 7) === month);
+  }
+
   function configureChartControls(type) {
     const isRevenue = type === 'ios-revenue' || type === 'android-revenue';
     chartRange.parentElement.hidden = !isRevenue;
@@ -289,15 +332,25 @@
     const { androidRevenue, iosRevenue } = getMetricSources();
     const revenue = type === 'ios-revenue' ? iosRevenue : androidRevenue;
     const months = monthsForRevenue(revenue);
-    const selectedMonth = chartMonth.value;
-    chartMonth.innerHTML = months
-      .map((month) => '<option value="' + month + '">' + monthLabel(month) + '</option>')
-      .join('');
+    const fingerprint = months.join('|');
 
-    if (!months.length) {
-      chartMonth.innerHTML = '<option value="">No months</option>';
-    } else if (months.includes(selectedMonth)) {
-      chartMonth.value = selectedMonth;
+    if (fingerprint !== chartMonthsFingerprint) {
+      chartMonthsFingerprint = fingerprint;
+      chartMonth.innerHTML = months
+        .map((month) => '<option value="' + month + '">' + monthLabel(month) + '</option>')
+        .join('');
+
+      if (!months.length) {
+        chartMonth.innerHTML = '<option value="">No months</option>';
+        chartSelectedMonth = '';
+      }
+    }
+
+    if (months.length) {
+      if (!isValidMonth(chartSelectedMonth) || !months.includes(chartSelectedMonth)) {
+        chartSelectedMonth = months[0];
+      }
+      chartMonth.value = chartSelectedMonth;
     }
   }
 
@@ -315,12 +368,15 @@
 
   function renderRevenueChart(title, revenue, color) {
     chartTitle.textContent = title;
-    configureChartControls(activeChart);
 
     if (chartRange.value === 'month') {
-      const selectedMonth = chartMonth.value;
-      const daily = (revenue?.revenueByDay || []).filter((item) => item.date.startsWith(selectedMonth));
+      const selectedMonth = chartSelectedMonth;
+      if (!isValidMonth(selectedMonth)) {
+        setChartEmpty(true);
+        return;
+      }
 
+      const daily = dailyForMonth(revenue, selectedMonth);
       if (daily.length) {
         makeDetailLineChart(
           daily.map((item) => item.date.slice(5)),
@@ -331,7 +387,7 @@
 
       const monthlyTotal = (revenue?.revenueByMonth || []).find((item) => item.month === selectedMonth);
       makeDetailBarChart(
-        [selectedMonth ? monthLabel(selectedMonth) : 'Month'],
+        [monthLabel(selectedMonth)],
         [monthlyTotal ? monthlyTotal.total : 0],
         title,
         color
@@ -346,7 +402,7 @@
     );
   }
 
-  function renderActiveChart() {
+  async function renderActiveChart() {
     if (!activeChart || !metricsData) return;
 
     const { android, ios, androidRevenue, iosRevenue } = getMetricSources();
@@ -355,6 +411,9 @@
     });
 
     if (activeChart === 'ios-revenue') {
+      if (chartRange.value === 'month' && isValidMonth(chartSelectedMonth)) {
+        await ensureIosMonthDaily(chartSelectedMonth);
+      }
       renderRevenueChart('iOS revenue', iosRevenue, chartColors.ios);
       return;
     }
@@ -412,22 +471,26 @@
     }
   }
 
-  async function openChart(type) {
+  async function openChart(type, options) {
+    const opts = options || {};
     activeChart = type;
     chartPanel.hidden = false;
-    chartRange.value = 'all';
-    configureChartControls(type);
-    renderActiveChart();
+    chartRange.value = opts.range || 'all';
+    chartSelectedMonth = opts.month || currentMonthKey();
+
     if (type === 'ios-revenue') {
       await ensureIosRevenueHistory();
-      configureChartControls(type);
-      renderActiveChart();
     }
+
+    configureChartControls(type);
+    await renderActiveChart();
     chartPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function closeChart() {
     activeChart = null;
+    chartSelectedMonth = '';
+    chartMonthsFingerprint = '';
     chartPanel.hidden = true;
     destroyCharts();
     document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
@@ -523,7 +586,7 @@
 
     renderRevenue(data.revenue, (data.ios && data.ios.financial) || null);
     renderWarnings(data.warnings);
-    if (activeChart) renderActiveChart();
+    if (activeChart) await renderActiveChart();
   }
 
   async function loadMetrics() {
@@ -588,16 +651,27 @@
       await ensureIosRevenueHistory();
       configureChartControls(activeChart);
     }
-    renderActiveChart();
+    await renderActiveChart();
   });
-  chartMonth.addEventListener('change', renderActiveChart);
+  chartMonth.addEventListener('change', async () => {
+    chartSelectedMonth = chartMonth.value;
+    await renderActiveChart();
+  });
 
   document.querySelectorAll('.dashboard-chart-trigger').forEach((card) => {
-    card.addEventListener('click', () => openChart(card.dataset.chart));
+    card.addEventListener('click', () =>
+      openChart(card.dataset.chart, {
+        range: card.dataset.chartRange || 'all',
+        month: card.dataset.chartMonth || currentMonthKey(),
+      })
+    );
     card.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        openChart(card.dataset.chart);
+        openChart(card.dataset.chart, {
+          range: card.dataset.chartRange || 'all',
+          month: card.dataset.chartMonth || currentMonthKey(),
+        });
       }
     });
   });

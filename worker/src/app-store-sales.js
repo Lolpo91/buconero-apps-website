@@ -22,6 +22,29 @@ function recentClosedMonths(months) {
   return result;
 }
 
+function monthDates(month) {
+  const match = /^(\d{4})-(\d{2})$/.exec(String(month || '').trim());
+  if (!match) return [];
+
+  const year = Number(match[1]);
+  const monthNumber = Number(match[2]);
+  if (!year || monthNumber < 1 || monthNumber > 12) return [];
+
+  const dates = [];
+  const cursor = new Date(Date.UTC(year, monthNumber - 1, 1));
+  const end = new Date(Date.UTC(year, monthNumber, 0));
+  const yesterday = new Date();
+  yesterday.setUTCHours(0, 0, 0, 0);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+  while (cursor <= end) {
+    if (cursor <= yesterday) dates.push(formatDateUTC(cursor));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return dates;
+}
+
 function recentDates(days) {
   const dates = [];
   const cursor = new Date();
@@ -407,6 +430,60 @@ export async function fetchAppStoreFinancial(env, appleAppId, appContext = {}) {
   }
 
   return result;
+}
+
+export async function fetchAppStoreMonthDaily(env, appleAppId, appContext = {}, month) {
+  const vendorNumber = env.APPLE_VENDOR_NUMBER;
+  if (!vendorNumber) {
+    return {
+      configured: false,
+      error:
+        'Set APPLE_VENDOR_NUMBER (App Store Connect → Payments and Financial Reports → Vendor ID)',
+    };
+  }
+
+  const context = {
+    appleAppId,
+    appName: appContext.appName || '',
+    bundleId: appContext.bundleId || env.APPLE_BUNDLE_ID || '',
+    appSku: appContext.appSku || '',
+    currency: 'USD',
+  };
+
+  const dates = monthDates(month);
+  if (!dates.length) {
+    return { configured: true, month, currency: 'USD', revenueByDay: [], total: 0 };
+  }
+
+  const salesResults = await Promise.all(
+    dates.map((reportDate) => fetchDailySales(env, vendorNumber, reportDate, context))
+  );
+
+  let currency = 'USD';
+  let total = 0;
+  const revenueByDay = [];
+
+  for (const entry of salesResults) {
+    if (entry.status !== 'ok' || !entry.stats) continue;
+    if (entry.stats.currency) currency = entry.stats.currency;
+    total += entry.stats.revenue;
+    if (entry.stats.revenue > 0) {
+      revenueByDay.push({
+        date: entry.reportDate,
+        total: Math.round(entry.stats.revenue * 100) / 100,
+      });
+    }
+  }
+
+  revenueByDay.sort((a, b) => a.date.localeCompare(b.date));
+
+  return {
+    configured: true,
+    month,
+    currency,
+    revenueByDay,
+    total: Math.round(total * 100) / 100,
+  };
 }
 
 export async function fetchAppStoreMonthlyRevenue(env, appleAppId, appContext = {}, months = 36) {

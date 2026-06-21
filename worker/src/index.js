@@ -17,6 +17,35 @@ export default {
     const authResponse = await handleAuth(request, env, pathname);
     if (authResponse) return authResponse;
 
+    if (pathname === '/api/ios-revenue-month' && request.method === 'GET') {
+      const session = await requireAuth(request, env);
+      if (!session) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers,
+        });
+      }
+
+      const month = url.searchParams.get('month') || '';
+      if (!/^\d{4}-\d{2}$/.test(month)) {
+        return new Response(JSON.stringify({ error: 'Invalid month. Use YYYY-MM.' }), {
+          status: 400,
+          headers,
+        });
+      }
+
+      try {
+        const { fetchAppStoreMonthDailyRevenue } = await import('./app-store.js');
+        const monthData = await fetchAppStoreMonthDailyRevenue(env, month);
+        return new Response(JSON.stringify(monthData), { status: 200, headers });
+      } catch (err) {
+        return new Response(
+          JSON.stringify({ configured: false, error: err.message || 'Monthly daily revenue failed' }),
+          { status: 500, headers }
+        );
+      }
+    }
+
     if (pathname === '/api/ios-revenue-history' && request.method === 'GET') {
       const session = await requireAuth(request, env);
       if (!session) {

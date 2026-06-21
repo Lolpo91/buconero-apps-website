@@ -1,5 +1,9 @@
 import { appStoreFetchJson } from './app-store-auth.js';
-import { fetchAppStoreFinancial, fetchAppStoreMonthlyRevenue } from './app-store-sales.js';
+import {
+  fetchAppStoreFinancial,
+  fetchAppStoreMonthDaily,
+  fetchAppStoreMonthlyRevenue,
+} from './app-store-sales.js';
 
 function aggregateIosReviews(reviews) {
   const stars = [0, 0, 0, 0, 0];
@@ -108,4 +112,30 @@ export async function fetchAppStoreRevenueHistory(env) {
     bundleId,
     appSku: app.attributes?.sku || '',
   });
+}
+
+export async function fetchAppStoreMonthDailyRevenue(env, month) {
+  const hasApple =
+    env.APPLE_KEY_ID && env.APPLE_ISSUER_ID && env.APPLE_PRIVATE_KEY;
+
+  if (!hasApple) {
+    return { configured: false, error: 'Apple API secrets not set' };
+  }
+
+  const bundleId = env.APPLE_BUNDLE_ID || 'com.cardgradingai.app';
+  const appsData = await appStoreFetchJson(
+    env,
+    '/v1/apps?filter[bundleId]=' + encodeURIComponent(bundleId) + '&limit=1'
+  );
+
+  const app = appsData.data?.[0];
+  if (!app) {
+    return { configured: false, error: 'App not found in App Store Connect' };
+  }
+
+  return fetchAppStoreMonthDaily(env, app.id, {
+    appName: app.attributes?.name || bundleId,
+    bundleId,
+    appSku: app.attributes?.sku || '',
+  }, month);
 }
