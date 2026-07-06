@@ -393,13 +393,13 @@ img {
 /* ─── Apps grid ─── */
 .apps {
   padding: 6rem 2rem;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
 }
 
@@ -503,6 +503,11 @@ img {
   box-shadow: 0 8px 32px rgba(40, 160, 255, 0.2);
 }
 
+.app-card[data-app="freeai"] .app-icon {
+  background: #000;
+  box-shadow: 0 8px 32px rgba(100, 180, 255, 0.22);
+}
+
 .app-card h3 {
   width: 100%;
   font-size: 1.25rem;
@@ -584,10 +589,15 @@ img {
   object-fit: contain;
 }
 
+.app-docs-link {
+  min-height: 40px;
+}
+
 /* Card accent colors on hover */
 .app-card[data-app="grading"]:hover { --glow: rgba(180, 200, 255, 0.12); }
 .app-card[data-app="book"]:hover { --glow: rgba(220, 200, 255, 0.12); }
 .app-card[data-app="centering"]:hover { --glow: rgba(200, 255, 220, 0.1); }
+.app-card[data-app="freeai"]:hover { --glow: rgba(80, 220, 255, 0.14); }
 
 /* ─── About ─── */
 .about {
@@ -1031,6 +1041,12 @@ img {
 }
 
 /* ─── Responsive ─── */
+@media (max-width: 1100px) {
+  .apps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .apps-grid {
     grid-template-columns: 1fr;
