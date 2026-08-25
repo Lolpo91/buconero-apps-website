@@ -399,7 +399,7 @@ img {
 
 .apps-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
@@ -508,6 +508,18 @@ img {
   box-shadow: 0 8px 32px rgba(100, 180, 255, 0.22);
 }
 
+.app-card[data-app="nowifi"] .app-icon {
+  background: #050814;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(80, 140, 255, 0.22);
+}
+
+.app-card[data-app="nowifi"] .app-icon img {
+  padding: 0;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
 .app-card h3 {
   width: 100%;
   font-size: 1.25rem;
@@ -598,6 +610,7 @@ img {
 .app-card[data-app="book"]:hover { --glow: rgba(220, 200, 255, 0.12); }
 .app-card[data-app="centering"]:hover { --glow: rgba(200, 255, 220, 0.1); }
 .app-card[data-app="freeai"]:hover { --glow: rgba(80, 220, 255, 0.14); }
+.app-card[data-app="nowifi"]:hover { --glow: rgba(255, 180, 70, 0.16); }
 
 /* ─── About ─── */
 .about {
